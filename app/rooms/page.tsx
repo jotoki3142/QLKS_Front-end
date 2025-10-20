@@ -59,7 +59,7 @@ export default function RoomsPage() {
           price: 600000,
           floor: 3,
           amenities: "Ban công, Máy lạnh",
-          status: "Đang dọn",
+          status: "Đã đặt",
           image: "/default-room.jpg",
         },
       ];

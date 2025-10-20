@@ -144,7 +144,7 @@ export default function EditRoomPage() {
             >
               <option value="Trống">Trống</option>
               <option value="Đang thuê">Đang thuê</option>
-              <option value="Đang dọn">Đang dọn</option>
+              <option value="Đã đặt">Đã đặt</option>
             </select>
           </div>
 
