@@ -143,7 +143,7 @@ export default function EditRoomPage() {
               className="border rounded w-full px-4 py-2"
             >
               <option value="Trống">Trống</option>
-              <option value="Đang thuê">Đang thuê</option>
+              <option value="Đang thuê">Đang sử dụng</option>
               <option value="Đã đặt">Đã đặt</option>
             </select>
           </div>
