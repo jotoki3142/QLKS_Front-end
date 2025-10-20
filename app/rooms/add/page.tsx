@@ -227,7 +227,7 @@ export default function AddRoomPage() {
             >
               <option>Trống</option>
               <option>Đang thuê</option>
-              <option>Đang dọn</option>
+              <option>Đã đặt</option>
             </select>
           </div>
 
