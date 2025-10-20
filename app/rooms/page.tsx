@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 
 interface Room {
-  id: number; // Số phòng
-  name: string; // Mã phòng
+  roomId: number; // Mã phòng (PK tự tăng)
+  roomNumber: string; // Số phòng (người dùng nhập)
   type: string; // Loại phòng
   price: number;
   floor?: number;
@@ -14,59 +14,59 @@ interface Room {
   image?: string;
 }
 
+// Kiểu dữ liệu trả về từ backend Spring Boot
+interface BackendRoom {
+  roomId: number;
+  roomNumber: string;
+  roomType: "SINGLE" | "DOUBLE" | string;
+  roomFloor: number;
+  roomPrice: number | string;
+  roomAmenities?: string;
+  roomStatus: "AVAILABLE" | "RESERVED" | "OCCUPIED" | string;
+  imageUrl?: string;
+}
+
+function mapRoom(r: BackendRoom): Room {
+  const typeMap: Record<string, string> = { SINGLE: "Phòng đơn", DOUBLE: "Phòng đôi" };
+  const statusMap: Record<string, string> = {
+    AVAILABLE: "Trống",
+    RESERVED: "Đã đặt",
+    OCCUPIED: "Đang sử dụng",
+  };
+  return {
+    roomId: r.roomId,
+    roomNumber: r.roomNumber,
+    type: typeMap[r.roomType] ?? String(r.roomType),
+    price: typeof r.roomPrice === "string" ? Number(r.roomPrice) : r.roomPrice,
+    floor: r.roomFloor,
+    amenities: r.roomAmenities ?? "",
+    status: statusMap[r.roomStatus] ?? String(r.roomStatus),
+    image: r.imageUrl ?? "/default-room.jpg",
+  };
+}
+
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState<"id" | "price" | null>(null);
+const [sortField, setSortField] = useState<"roomId" | "price" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // 🧩 Load dữ liệu phòng
+  // 🧩 Load dữ liệu phòng từ backend (proxy qua Next.js)
   useEffect(() => {
-    const saved = localStorage.getItem("rooms");
-    if (saved) {
-      const data = JSON.parse(saved);
-      setRooms(data);
-      setFilteredRooms(data);
-    } else {
-      const defaultRooms = [
-        {
-          id: 101,
-          name: "MP101",
-          type: "Phòng đơn",
-          price: 500000,
-          floor: 1,
-          amenities: "Wifi, TV, Máy lạnh",
-          status: "Trống",
-          image: "/default-room.jpg",
-        },
-        {
-          id: 102,
-          name: "MP102",
-          type: "Phòng đôi",
-          price: 800000,
-          floor: 2,
-          amenities: "Bồn tắm, View biển",
-          status: "Đang sử dụng",
-          image: "/default-room.jpg",
-        },
-        {
-          id: 103,
-          name: "MP103",
-          type: "Phòng đơn",
-          price: 600000,
-          floor: 3,
-          amenities: "Ban công, Máy lạnh",
-          status: "Đã đặt",
-          image: "/default-room.jpg",
-        },
-      ];
-      setRooms(defaultRooms);
-      setFilteredRooms(defaultRooms);
-      localStorage.setItem("rooms", JSON.stringify(defaultRooms));
-    }
+    const load = async () => {
+      const res = await fetch("/api/rooms/api/list", { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to fetch rooms");
+      const data: BackendRoom[] = await res.json();
+      const mapped = data.map(mapRoom);
+      setRooms(mapped);
+      setFilteredRooms(mapped);
+    };
+    load().catch((e) => {
+      console.error(e);
+    });
   }, []);
 
   // 🔍 Tìm kiếm
@@ -74,7 +74,7 @@ export default function RoomsPage() {
     const keyword = search.toLowerCase();
     const filtered = rooms.filter(
       (room) =>
-        room.name.toLowerCase().includes(keyword) ||
+        room.roomNumber.toLowerCase().includes(keyword) ||
         room.type.toLowerCase().includes(keyword) ||
         room.status.toLowerCase().includes(keyword)
     );
@@ -83,7 +83,7 @@ export default function RoomsPage() {
   }, [search, rooms]);
 
   // 🔁 Sắp xếp
-  const handleSort = (field: "id" | "price") => {
+const handleSort = (field: "roomId" | "price") => {
     let newOrder: "asc" | "desc" = "asc";
     if (sortField === field && sortOrder === "asc") newOrder = "desc";
     setSortField(field);
@@ -106,15 +106,23 @@ export default function RoomsPage() {
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
-  // 🗑 Xóa phòng
-  const handleDelete = (id: number) => {
-    if (confirm(`Bạn có chắc muốn xóa phòng ${id}?`)) {
-      const updated = rooms.filter((room) => room.id !== id);
-      setRooms(updated);
-      localStorage.setItem("rooms", JSON.stringify(updated));
-      setFilteredRooms(updated);
-      alert(`✅ Đã xóa phòng ${id} thành công!`);
+  // 🗑 Xóa phòng (gọi BE)
+  const handleDelete = async (roomId: number, displayNumber: string) => {
+    if (!confirm(`Bạn có chắc muốn xóa phòng ${displayNumber}?`)) return;
+    const res = await fetch(`/api/rooms/api/delete/${roomId}`, { method: "POST" });
+    if (!res.ok) {
+      alert("Xóa phòng thất bại");
+      return;
     }
+    // Reload list
+    const reload = await fetch("/api/rooms/api/list", { cache: "no-store" });
+    if (reload.ok) {
+      const data: BackendRoom[] = await reload.json();
+      const mapped = data.map(mapRoom);
+      setRooms(mapped);
+      setFilteredRooms(mapped);
+    }
+    alert(`✅ Đã xóa phòng ${displayNumber} thành công!`);
   };
 
   return (
@@ -144,17 +152,17 @@ export default function RoomsPage() {
         <table className="min-w-full border-collapse text-lg">
           <thead className="bg-gray-100 text-gray-700 text-lg">
             <tr>
-              <th className="py-4 px-5 text-left border-b">Mã phòng</th>
-              <th className="py-4 px-5 text-left border-b">Ảnh phòng</th>
               <th
                 className="py-4 px-5 text-left border-b cursor-pointer"
-                onClick={() => handleSort("id")}
+                onClick={() => handleSort("roomId")}
               >
-                Số phòng{" "}
-                <span className="text-base">
-                  {sortField === "id" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                Mã phòng (roomId)
+                <span className="text-base ml-1">
+                  {sortField === "roomId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                 </span>
               </th>
+              <th className="py-4 px-5 text-left border-b">Ảnh phòng</th>
+              <th className="py-4 px-5 text-left border-b">Số phòng (roomNumber)</th>
               <th className="py-4 px-5 text-left border-b">Loại phòng</th>
               <th
                 className="py-4 px-5 text-left border-b cursor-pointer"
@@ -181,8 +189,8 @@ export default function RoomsPage() {
               </tr>
             ) : (
               paginatedRooms.map((room) => (
-                <tr key={room.id} className="border-b hover:bg-gray-50 transition duration-200">
-                  <td className="py-3 px-5 font-semibold">{room.name}</td>
+                <tr key={room.roomId} className="border-b hover:bg-gray-50 transition duration-200">
+                  <td className="py-3 px-5 font-semibold">{room.roomId}</td>
                   <td className="py-3 px-5">
                     <img
                       src={room.image || "/default-room.jpg"}
@@ -190,7 +198,7 @@ export default function RoomsPage() {
                       className="w-20 h-16 object-cover rounded-md border"
                     />
                   </td>
-                  <td className="py-3 px-5">{room.id}</td>
+                  <td className="py-3 px-5">{room.roomNumber}</td>
                   <td className="py-3 px-5">{room.type}</td>
                   <td className="py-3 px-5">{room.price.toLocaleString()}</td>
                   <td className="py-3 px-5">{room.floor || "-"}</td>
@@ -208,13 +216,13 @@ export default function RoomsPage() {
                   <td className="py-3 px-5 text-gray-700">{room.amenities || "-"}</td>
                   <td className="py-3 px-5 text-center">
                     <Link
-                      href={`/rooms/edit/${room.id}`}
+                      href={`/rooms/edit/${room.roomId}`}
                       className="text-blue-600 hover:underline mx-3 text-lg"
                     >
                       Sửa
                     </Link>
                     <button
-                      onClick={() => handleDelete(room.id)}
+                      onClick={() => handleDelete(room.roomId, room.roomNumber)}
                       className="text-red-600 hover:underline mx-3 text-lg"
                     >
                       Xóa

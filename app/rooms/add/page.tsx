@@ -4,15 +4,21 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 type RoomForm = {
-  id: string;
-  name: string;
+  name: string; // roomNumber
   type: string;
   price: string;
   floor: string;
   status: string;
   amenities: string;
-  imageUrl: string; // nếu người dùng nhập URL
-  imageFileData?: string; // dataURL nếu upload file
+  imageFile?: File | null; // file upload thực tế
+  imageFileData?: string; // preview
+};
+
+const toEnumType = (v: string) => (v === "Phòng đôi" ? "DOUBLE" : "SINGLE");
+const toEnumStatus = (v: string) => {
+  if (v === "Đang sử dụng") return "OCCUPIED";
+  if (v === "Đã đặt") return "RESERVED";
+  return "AVAILABLE";
 };
 
 export default function AddRoomPage() {
@@ -21,14 +27,13 @@ export default function AddRoomPage() {
   const [saving, setSaving] = useState(false);
 
   const [room, setRoom] = useState<RoomForm>({
-    id: "",
     name: "",
     type: "Phòng đơn",
     price: "",
     floor: "",
     status: "Trống",
     amenities: "",
-    imageUrl: "",
+    imageFile: null,
     imageFileData: undefined,
   });
 
@@ -41,90 +46,67 @@ export default function AddRoomPage() {
   // xử lý upload file -> preview dataURL
   const handleFileChange = (file?: File | null) => {
     if (!file) {
-      setRoom((r) => ({ ...r, imageFileData: undefined }));
+      setRoom((r) => ({ ...r, imageFile: null, imageFileData: undefined }));
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
-      setRoom((r) => ({ ...r, imageFileData: String(reader.result) }));
+      setRoom((r) => ({ ...r, imageFile: file, imageFileData: String(reader.result) }));
     };
     reader.readAsDataURL(file);
   };
 
-  // helper: lấy ảnh để lưu (ưu tiên fileData nếu có, ngược lại dùng imageUrl, nếu cả 2 không có trả undefined)
-  const resolveImageToSave = () => {
-    if (room.imageFileData) return room.imageFileData;
-    if (room.imageUrl && room.imageUrl.trim() !== "") return room.imageUrl.trim();
-    return undefined;
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (saving) return;
 
-    const idNum = Number(room.id);
     const priceNum = Number(room.price);
-    const floorNum = room.floor === "" ? undefined : Number(room.floor);
+    const floorNum = Number(room.floor);
 
-    // Validation cơ bản
-    if (!room.id || isNaN(idNum) || !Number.isFinite(idNum)) {
-      setError("⚠️ Vui lòng nhập SỐ PHÒNG hợp lệ (số).");
-      return;
-    }
-    if (idNum <= 0) {
-      setError("⚠️ Số phòng phải là số dương.");
-      return;
-    }
     if (!room.name || room.name.trim().length < 1) {
-      setError("⚠️ Vui lòng nhập MÃ PHÒNG (không để trống).");
+      setError("⚠️ Vui lòng nhập SỐ PHÒNG.");
       return;
     }
     if (!room.price || isNaN(priceNum) || priceNum <= 0) {
       setError("⚠️ Vui lòng nhập GIÁ phòng hợp lệ (> 0).");
       return;
     }
-    if (floorNum !== undefined && (isNaN(floorNum) || floorNum < 0)) {
-      setError("⚠️ Tầng phải là số hợp lệ (>= 0).");
+    if (!room.floor || isNaN(floorNum) || floorNum <= 0) {
+      setError("⚠️ Tầng phải là số dương (>= 1).");
       return;
     }
 
-    // Lấy dữ liệu hiện có
-    const saved = localStorage.getItem("rooms");
-    const rooms = saved ? JSON.parse(saved) : [];
-
-    // Kiểm tra trùng SỐ PHÒNG (id)
-    if (rooms.some((r: any) => Number(r.id) === idNum)) {
-      setError("⚠️ Số phòng này đã tồn tại. Vui lòng chọn số khác.");
-      return;
-    }
-
-    // Kiểm tra trùng MÃ PHÒNG (name) - case-insensitive
-    const nameTrim = room.name.trim().toLowerCase();
-    if (rooms.some((r: any) => (r.name || "").toString().trim().toLowerCase() === nameTrim)) {
-      setError("⚠️ Mã phòng này đã tồn tại. Vui lòng đổi mã khác.");
-      return;
-    }
-
-    // Nếu OK thì tạo object mới và lưu
     setSaving(true);
     try {
-      const imageToSave = resolveImageToSave() ?? "/default-room.jpg";
-      const newRoom = {
-        id: idNum,
-        name: room.name.trim(),
-        type: room.type,
-        price: priceNum,
-        floor: floorNum ?? null,
-        status: room.status,
-        amenities: room.amenities?.trim() || "",
-        image: imageToSave,
-      };
+      const form = new FormData();
+      form.append("roomNumber", room.name.trim());
+      form.append("roomType", toEnumType(room.type));
+      form.append("roomFloor", String(floorNum));
+      form.append("roomPrice", String(priceNum));
+      form.append("roomAmenities", room.amenities?.trim() || "");
+      form.append("roomStatus", toEnumStatus(room.status));
+      // luôn gửi part imageFile (rỗng nếu không có) để Spring binding không lỗi
+      if (room.imageFile) {
+        form.append("imageFile", room.imageFile);
+      } else {
+        form.append("imageFile", new Blob([]), "");
+      }
 
-      rooms.push(newRoom);
-      localStorage.setItem("rooms", JSON.stringify(rooms));
+      const res = await fetch("/api/rooms/api/add", {
+        method: "POST",
+        body: form,
+      });
 
-      // thành công -> reset hoặc chuyển về danh sách
+      if (res.status === 409) {
+        setError("⚠️ Số phòng đã tồn tại. Vui lòng chọn số khác hoặc chỉnh sửa phòng hiện có.");
+        return;
+      }
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Request failed");
+      }
+
       alert("✅ Thêm phòng thành công!");
       router.push("/rooms");
     } catch (err) {
@@ -147,29 +129,16 @@ export default function AddRoomPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Số phòng */}
+          {/* Số phòng  */}
           <div>
-            <label className="block font-medium mb-1">Số phòng</label>
-            <input
-              name="id"
-              type="number"
-              value={room.id}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              min={1}
-              required
-            />
-          </div>
-
-          {/* Mã phòng */}
-          <div>
-            <label className="block font-medium mb-1">Mã phòng</label>
+            <label className="block font-medium mb-1">Mã/Số phòng</label>
             <input
               name="name"
               type="text"
               value={room.name}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
+              placeholder="VD: 101 hoặc MP101"
               required
             />
           </div>
@@ -211,8 +180,9 @@ export default function AddRoomPage() {
               value={room.floor}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
-              min={0}
+              min={1}
               placeholder="Ví dụ: 1, 2, 3..."
+              required
             />
           </div>
 
@@ -244,21 +214,7 @@ export default function AddRoomPage() {
             />
           </div>
 
-          {/* Ảnh: input URL */}
-          <div>
-            <label className="block font-medium mb-1">Ảnh phòng (URL)</label>
-            <input
-              name="imageUrl"
-              type="text"
-              value={room.imageUrl}
-              onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
-              placeholder="/default-room.jpg hoặc https://..."
-            />
-            <p className="text-sm text-gray-500 mt-1">Hoặc upload file ảnh bên dưới để preview và lưu ảnh nội bộ.</p>
-          </div>
-
-          {/* Ảnh: upload file (dataURL) */}
+          {/* Ảnh: upload file (tùy chọn) */}
           <div>
             <label className="block font-medium mb-1">Upload ảnh (tùy chọn)</label>
             <input
@@ -274,7 +230,7 @@ export default function AddRoomPage() {
             <p className="block font-medium mb-1">Preview ảnh</p>
             <div className="w-48 h-36 border rounded overflow-hidden">
               <img
-                src={room.imageFileData ?? (room.imageUrl ? room.imageUrl : "/default-room.jpg")}
+                src={room.imageFileData ?? "/default-room.jpg"}
                 alt="preview"
                 className="w-full h-full object-cover"
               />
