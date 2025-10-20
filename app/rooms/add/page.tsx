@@ -226,7 +226,7 @@ export default function AddRoomPage() {
               className="w-full border rounded px-3 py-2"
             >
               <option>Trống</option>
-              <option>Đang thuê</option>
+              <option>Đang sử dụng</option>
               <option>Đã đặt</option>
             </select>
           </div>

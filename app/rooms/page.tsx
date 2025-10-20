@@ -49,7 +49,7 @@ export default function RoomsPage() {
           price: 800000,
           floor: 2,
           amenities: "Bồn tắm, View biển",
-          status: "Đang thuê",
+          status: "Đang sử dụng",
           image: "/default-room.jpg",
         },
         {
