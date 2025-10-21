@@ -1,0 +1,9 @@
+.body {
+  background-color: #f9fafb; /* gray-50 */
+}
+
+.content {
+  padding-top: 6rem; /* pt-24 */
+  padding-left: 1.5rem; /* px-6 */
+  padding-right: 1.5rem; /* px-6 */
+}

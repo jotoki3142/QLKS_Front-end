@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Room {
   roomId: number; // Mã phòng (PK tự tăng)
@@ -45,11 +46,13 @@ function mapRoom(r: BackendRoom): Room {
   };
 }
 
+import styles from "./page.module.css";
+
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [search, setSearch] = useState("");
-const [sortField, setSortField] = useState<"roomId" | "price" | null>(null);
+  const [sortField, setSortField] = useState<"roomId" | "price" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -126,104 +129,85 @@ const handleSort = (field: "roomId" | "price") => {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8 text-gray-900 text-lg">
+    <main className={styles.main}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
-        <h1 className="text-4xl font-bold text-gray-800">Quản lý phòng</h1>
+      <div className={styles.header}>
+        <h1 className={styles.heading}>Quản lý phòng</h1>
 
-        <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+        <div className={styles.headerRight}>
           <input
             type="text"
             placeholder="🔍 Tìm kiếm phòng..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border border-gray-300 rounded px-5 py-3 w-full sm:w-80 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={styles.search}
           />
           <Link href="/rooms/add">
-            <button className="bg-blue-600 text-white text-lg px-5 py-3 rounded hover:bg-blue-700 transition">
-              + Thêm phòng mới
-            </button>
+            <button className={styles.addButton}>+ Thêm phòng mới</button>
           </Link>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto bg-white shadow-lg rounded-lg">
-        <table className="min-w-full border-collapse text-lg">
-          <thead className="bg-gray-100 text-gray-700 text-lg">
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead className={styles.thead}>
             <tr>
-              <th
-                className="py-4 px-5 text-left border-b cursor-pointer"
-                onClick={() => handleSort("roomId")}
-              >
+              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("roomId")}>
                 Mã phòng (roomId)
-                <span className="text-base ml-1">
+                <span className={styles.sortIcon}>
                   {sortField === "roomId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                 </span>
               </th>
-              <th className="py-4 px-5 text-left border-b">Ảnh phòng</th>
-              <th className="py-4 px-5 text-left border-b">Số phòng (roomNumber)</th>
-              <th className="py-4 px-5 text-left border-b">Loại phòng</th>
-              <th
-                className="py-4 px-5 text-left border-b cursor-pointer"
-                onClick={() => handleSort("price")}
-              >
-                Giá (VNĐ){" "}
-                <span className="text-base">
+              <th className={styles.th}>Ảnh phòng</th>
+              <th className={styles.th}>Số phòng</th>
+              <th className={styles.th}>Loại phòng</th>
+              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("price")}>
+                Giá (VNĐ)
+                <span className={styles.sortIcon}>
                   {sortField === "price" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                 </span>
               </th>
-              <th className="py-4 px-5 text-left border-b">Tầng</th>
-              <th className="py-4 px-5 text-left border-b">Trạng thái</th>
-              <th className="py-4 px-5 text-left border-b">Tiện nghi</th>
-              <th className="py-4 px-5 text-center border-b">Hành động</th>
+              <th className={styles.th}>Tầng</th>
+              <th className={styles.th}>Trạng thái</th>
+              <th className={styles.th}>Tiện nghi</th>
+              <th className={`${styles.th} ${styles.center}`}>Hành động</th>
             </tr>
           </thead>
 
           <tbody>
             {paginatedRooms.length === 0 ? (
               <tr>
-                <td colSpan={9} className="text-center py-8 text-gray-500 italic text-lg">
+                <td colSpan={9} className={`${styles.td} ${styles.center}`}>
                   Không tìm thấy phòng nào phù hợp...
                 </td>
               </tr>
             ) : (
               paginatedRooms.map((room) => (
-                <tr key={room.roomId} className="border-b hover:bg-gray-50 transition duration-200">
-                  <td className="py-3 px-5 font-semibold">{room.roomId}</td>
-                  <td className="py-3 px-5">
-                    <img
-                      src={room.image || "/default-room.jpg"}
-                      className="w-20 h-16 object-cover rounded-md border"
-                    />
+                <tr key={room.roomId} className={styles.tr}>
+                  <td className={styles.td} style={{ fontWeight: 600 }}>{room.roomId}</td>
+                  <td className={styles.td}>
+                    <Image src={room.image || "/default-room.jpg"} width={80} height={64} className={styles.roomImage} alt="room" />
                   </td>
-                  <td className="py-3 px-5">{room.roomNumber}</td>
-                  <td className="py-3 px-5">{room.type}</td>
-                  <td className="py-3 px-5">{room.price.toLocaleString()}</td>
-                  <td className="py-3 px-5">{room.floor || "-"}</td>
-                  <td
-                    className={`py-3 px-5 font-semibold ${
+                  <td className={styles.td}>{room.roomNumber}</td>
+                  <td className={styles.td}>{room.type}</td>
+                  <td className={styles.td}>{room.price.toLocaleString()}</td>
+                  <td className={styles.td}>{room.floor || "-"}</td>
+                  <td className={`${styles.td} ${
                       room.status === "Trống"
-                        ? "text-green-600"
+                        ? styles.statusAvailable
                         : room.status === "Đang thuê"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                    }`}
-                  >
+                        ? styles.statusOccupied
+                        : styles.statusReserved
+                    }`}>
                     {room.status}
                   </td>
-                  <td className="py-3 px-5 text-gray-700">{room.amenities || "-"}</td>
-                  <td className="py-3 px-5 text-center">
-                    <Link
-                      href={`/rooms/edit/${room.roomId}`}
-                      className="text-blue-600 hover:underline mx-3 text-lg"
-                    >
+                  <td className={styles.td} style={{ color: "#374151" }}>{room.amenities || "-"}</td>
+                  <td className={`${styles.td} ${styles.center}`}>
+                    <Link href={`/rooms/edit/${room.roomId}`} className="text-blue-600 hover:underline mx-3 text-lg">
                       Sửa
                     </Link>
-                    <button
-                      onClick={() => handleDelete(room.roomId, room.roomNumber)}
-                      className="text-red-600 hover:underline mx-3 text-lg"
-                    >
+                    <button onClick={() => handleDelete(room.roomId, room.roomNumber)} className="text-red-600 hover:underline mx-3 text-lg">
                       Xóa
                     </button>
                   </td>
@@ -236,16 +220,12 @@ const handleSort = (field: "roomId" | "price") => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-8 gap-3">
+        <div className={styles.pagination}>
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
               onClick={() => handlePageChange(i + 1)}
-              className={`px-4 py-2 rounded border text-lg ${
-                currentPage === i + 1
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
+              className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`}
             >
               {i + 1}
             </button>
