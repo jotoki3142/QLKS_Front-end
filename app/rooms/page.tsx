@@ -52,7 +52,7 @@ export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [search, setSearch] = useState("");
-  const [sortField, setSortField] = useState<"roomId" | "price" | null>(null);
+  const [sortField, setSortField] = useState<"roomId" | "price" | "roomNumber" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -85,17 +85,23 @@ export default function RoomsPage() {
     setCurrentPage(1);
   }, [search, rooms]);
 
-  // Sắp xếp
-const handleSort = (field: "roomId" | "price") => {
+// Sắp xếp
+const handleSort = (field: "roomId" | "price" | "roomNumber") => {
     let newOrder: "asc" | "desc" = "asc";
     if (sortField === field && sortOrder === "asc") newOrder = "desc";
     setSortField(field);
     setSortOrder(newOrder);
 
     const sorted = [...filteredRooms].sort((a, b) => {
-      const aValue = a[field];
-      const bValue = b[field];
-      return newOrder === "asc" ? aValue - bValue : bValue - aValue;
+      let cmp = 0;
+      if (field === "roomNumber") {
+        cmp = a.roomNumber.localeCompare(b.roomNumber, "vi", { numeric: true, sensitivity: "base" });
+      } else {
+        const aValue = a[field] as number;
+        const bValue = b[field] as number;
+        cmp = aValue - bValue;
+      }
+      return newOrder === "asc" ? cmp : -cmp;
     });
     setFilteredRooms(sorted);
   };
@@ -130,22 +136,60 @@ const handleSort = (field: "roomId" | "price") => {
 
   return (
     <main className={styles.main}>
-      {/* Header */}
-      <div className={styles.header}>
-        <h1 className={styles.heading}>Quản lý phòng</h1>
+      {/* Banner header */}
+      <section className={styles.pageHeader}>
+        <div className={styles.pageHeaderContent}>
+          <div>
+            <h1 className={styles.pageTitle}>Quản lý phòng</h1>
+            <p className={styles.pageSubtitle}>Quản lý phòng trong khách sạn</p>
+          </div>
+        </div>
+      </section>
 
-        <div className={styles.headerRight}>
-          <input
-            type="text"
-            placeholder="🔍 Tìm kiếm phòng..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={styles.search}
-          />
-          <Link href="/rooms/add">
-            <button className={styles.addButton}>+ Thêm phòng mới</button>
+      {/* Filters */}
+      <div className={styles.filters}>
+        <div className={styles.filterLeft}>
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Tìm kiếm phòng</label>
+            <input
+              type="text"
+              placeholder="Nhập số phòng..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={styles.search}
+            />
+          </div>
+
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Loại phòng</label>
+            <select className={styles.select} defaultValue="">
+              <option value="">Tất cả loại</option>
+              <option>Phòng đơn</option>
+              <option>Phòng đôi</option>
+            </select>
+          </div>
+
+          <div className={styles.filterGroup}>
+            <label className={styles.filterLabel}>Tầng</label>
+            <input className={styles.input} placeholder="Nhập tầng..." />
+          </div>
+
+          <div className={styles.filterActions}>
+            <button type="button" className={`${styles.btn} ${styles.btnPrimary}`}>Tìm kiếm</button>
+            <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setSearch("")}>Xóa bộ lọc</button>
+          </div>
+        </div>
+        <div className={styles.filterRight}>
+          <Link href="/rooms/add" className={styles.addLink}>
+            +Thêm phòng mới
           </Link>
         </div>
+      </div>
+
+      {/* Info line */}
+      <div className={styles.listInfo}>
+        <span className={styles.infoDot}>i</span>
+        <span>Hiển thị {paginatedRooms.length}/{rooms.length} phòng (Trang {currentPage}/{Math.max(totalPages, 1)})</span>
       </div>
 
       {/* Table */}
@@ -154,16 +198,21 @@ const handleSort = (field: "roomId" | "price") => {
           <thead className={styles.thead}>
             <tr>
               <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("roomId")}>
-                Mã phòng (roomId)
+                Mã Phòng
                 <span className={styles.sortIcon}>
                   {sortField === "roomId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                 </span>
               </th>
               <th className={styles.th}>Ảnh phòng</th>
-              <th className={styles.th}>Số phòng</th>
+              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("roomNumber")}>
+                Số phòng
+                <span className={styles.sortIcon}>
+                  {sortField === "roomNumber" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                </span>
+              </th>
               <th className={styles.th}>Loại phòng</th>
               <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("price")}>
-                Giá (VNĐ)
+                Giá
                 <span className={styles.sortIcon}>
                   {sortField === "price" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                 </span>
@@ -171,7 +220,7 @@ const handleSort = (field: "roomId" | "price") => {
               <th className={styles.th}>Tầng</th>
               <th className={styles.th}>Trạng thái</th>
               <th className={styles.th}>Tiện nghi</th>
-              <th className={`${styles.th} ${styles.center}`}>Hành động</th>
+              <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
             </tr>
           </thead>
 
@@ -191,12 +240,17 @@ const handleSort = (field: "roomId" | "price") => {
                   </td>
                   <td className={styles.td}>{room.roomNumber}</td>
                   <td className={styles.td}>{room.type}</td>
-                  <td className={styles.td}>{room.price.toLocaleString()}</td>
+                  <td className={styles.td}>
+                    <div className={styles.priceBox}>
+                      <div className={styles.priceValue}>{room.price.toLocaleString()}VND</div>
+                      <div className={styles.priceNight}>Đêm</div>
+                    </div>
+                  </td>
                   <td className={styles.td}>{room.floor || "-"}</td>
                   <td className={`${styles.td} ${
                       room.status === "Trống"
                         ? styles.statusAvailable
-                        : room.status === "Đang thuê"
+                        : room.status === "Đang sử dụng"
                         ? styles.statusOccupied
                         : styles.statusReserved
                     }`}>
@@ -204,10 +258,10 @@ const handleSort = (field: "roomId" | "price") => {
                   </td>
                   <td className={styles.td} style={{ color: "#374151" }}>{room.amenities || "-"}</td>
                   <td className={`${styles.td} ${styles.center}`}>
-                    <Link href={`/rooms/edit/${room.roomId}`} className="text-blue-600 hover:underline mx-3 text-lg">
-                      Sửa
+                    <Link href={`/rooms/edit/${room.roomId}`} className={styles.btnUpdate}>
+                      Cập nhật
                     </Link>
-                    <button onClick={() => handleDelete(room.roomId, room.roomNumber)} className="text-red-600 hover:underline mx-3 text-lg">
+                    <button onClick={() => handleDelete(room.roomId, room.roomNumber)} className={styles.btnDelete}>
                       Xóa
                     </button>
                   </td>
@@ -221,15 +275,21 @@ const handleSort = (field: "roomId" | "price") => {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className={styles.pagination}>
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => handlePageChange(i + 1)}
-              className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`}
-            >
-              {i + 1}
-            </button>
-          ))}
+          <div className={styles.pagerGroup}>
+            <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(1)}>&laquo;</button>
+            <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(Math.max(1, currentPage - 1))}>&lsaquo;</button>
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button
+                key={i}
+                onClick={() => handlePageChange(i + 1)}
+                className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}>&rsaquo;</button>
+            <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(totalPages)}>&raquo;</button>
+          </div>
         </div>
       )}
     </main>

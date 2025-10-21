@@ -192,7 +192,13 @@ export default function AddRoomPage() {
               name="status"
               value={room.status}
               onChange={handleChange}
-              className={styles.select}
+              className={`${styles.select} ${
+                room.status === "Trống"
+                  ? styles.statusAvailable
+                  : room.status === "Đang sử dụng"
+                  ? styles.statusOccupied
+                  : styles.statusReserved
+              }`}
             >
               <option>Trống</option>
               <option>Đang sử dụng</option>

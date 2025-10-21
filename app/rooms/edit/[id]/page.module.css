@@ -48,6 +48,7 @@
   border: 1px solid #d1d5db; /* gray-300 */
   border-radius: 0.375rem; /* rounded */
   padding: 0.5rem 1rem; /* px-4 py-2 */
+  box-sizing: border-box; /* keep same visual width across controls */
 }
 
 .imagePreview {
@@ -71,3 +72,8 @@
 }
 .submit:hover { background: #1d4ed8; }
 .submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Status colors for select text */
+.statusAvailable { color: #16a34a; font-weight: 600; }
+.statusOccupied { color: #dc2626; font-weight: 600; }
+.statusReserved { color: #2563eb; font-weight: 600; }

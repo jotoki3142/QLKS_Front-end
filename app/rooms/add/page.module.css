@@ -10,7 +10,7 @@
   max-width: 42rem; /* max-w-2xl */
   margin: 0 auto; /* mx-auto */
   background: #fff; /* bg-white */
-  padding: 1.5rem; /* p-6 */
+  padding: 2rem; /* unified with edit page */
   border-radius: 0.5rem; /* rounded */
   box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); /* shadow */
 }
@@ -48,6 +48,7 @@
   border: 1px solid #d1d5db; /* gray-300 */
   border-radius: 0.375rem; /* rounded */
   padding: 0.5rem 0.75rem; /* px-3 py-2 */
+  box-sizing: border-box; /* keep same visual width across controls */
 }
 
 .hint {
@@ -87,3 +88,8 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Status colors for select text */
+.statusAvailable { color: #16a34a; font-weight: 600; }
+.statusOccupied { color: #dc2626; font-weight: 600; }
+.statusReserved { color: #2563eb; font-weight: 600; }

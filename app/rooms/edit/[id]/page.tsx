@@ -91,7 +91,7 @@ export default function EditRoomPage() {
 
     const priceNum = Number(form.price);
     const floorNum = Number(form.floor);
-    if (!form.name.trim()) return setError("⚠️ Mã/Số phòng không được để trống!");
+    if (!form.name.trim()) return setError("⚠️ Số phòng không được để trống!");
     if (!priceNum || priceNum <= 0) return setError("⚠️ Giá phòng phải lớn hơn 0!");
     if (!floorNum || floorNum <= 0) return setError("⚠️ Tầng phải là số dương!");
 
@@ -137,7 +137,7 @@ export default function EditRoomPage() {
 
         <form onSubmit={handleUpdate} className={styles.form}>
           <div>
-            <label className={styles.label}>Mã/Số phòng</label>
+            <label className={styles.label}>Số phòng</label>
             <input
               type="text"
               name="name"
@@ -167,7 +167,18 @@ export default function EditRoomPage() {
 
           <div>
             <label className={styles.label}>Trạng thái</label>
-            <select name="status" value={form.status} onChange={handleChange} className={styles.select}>
+            <select 
+              name="status" 
+              value={form.status} 
+              onChange={handleChange} 
+              className={`${styles.select} ${
+                form.status === "Trống"
+                  ? styles.statusAvailable
+                  : form.status === "Đang sử dụng"
+                  ? styles.statusOccupied
+                  : styles.statusReserved
+              }`}
+            >
               <option value="Trống">Trống</option>
               <option value="Đang sử dụng">Đang sử dụng</option>
               <option value="Đã đặt">Đã đặt</option>
