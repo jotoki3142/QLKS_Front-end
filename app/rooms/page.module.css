@@ -1,0 +1,73 @@
+.main {
+  min-height: 100vh;
+  background-color: #f9fafb; /* gray-50 */
+  padding: 2rem; /* p-8 */
+  color: #111827; /* gray-900 */
+  font-size: 1.125rem; /* text-lg */
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem; /* mb-8 */
+}
+@media (min-width: 640px) {
+  .header { flex-direction: row; align-items: center; }
+}
+
+.heading {
+  font-size: 2.25rem; /* text-4xl */
+  font-weight: 700; /* font-bold */
+  color: #1f2937; /* text-gray-800 */
+}
+
+.headerRight {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .headerRight { flex-direction: row; align-items: center; }
+}
+
+.search {
+  border: 1px solid #d1d5db; /* gray-300 */
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.25rem; /* px-5 py-3 */
+  width: 100%;
+  max-width: 20rem; /* sm:w-80 */
+  font-size: 1.125rem; /* text-lg */
+}
+.search:focus { outline: none; box-shadow: 0 0 0 2px rgba(59,130,246,0.5); }
+
+.addButton {
+  background: #2563eb; /* blue-600 */
+  color: #fff;
+  font-size: 1.125rem; /* text-lg */
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  transition: background-color 150ms ease-in-out;
+}
+.addButton:hover { background: #1d4ed8; }
+
+.tableWrap { overflow-x: auto; background: #fff; border-radius: 0.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+.table { min-width: 100%; border-collapse: collapse; font-size: 1.125rem; }
+.thead { background: #f3f4f6; color: #374151; /* gray-100/700 */ }
+.th, .td { padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb; text-align: left; }
+.clickable { cursor: pointer; }
+.sortIcon { font-size: 1rem; margin-left: 0.25rem; }
+.tr:hover { background: #f9fafb; transition: background-color 200ms ease; }
+
+.roomImage { width: 5rem; height: 4rem; object-fit: cover; border-radius: 0.375rem; border: 1px solid #e5e7eb; }
+.center { text-align: center; }
+
+.statusAvailable { color: #16a34a; /* green-600 */ font-weight: 600; }
+.statusOccupied { color: #dc2626; /* red-600 */ font-weight: 600; }
+.statusReserved { color: #ca8a04; /* yellow-600 */ font-weight: 600; }
+
+.pagination { display: flex; justify-content: center; margin-top: 2rem; gap: 0.75rem; }
+.pageButton { padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem; background: #fff; color: #374151; font-size: 1.125rem; }
+.pageButton:hover { background: #f3f4f6; }
+.pageButtonActive { background: #2563eb; color: #fff; border-color: #2563eb; }

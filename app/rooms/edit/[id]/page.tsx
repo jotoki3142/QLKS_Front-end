@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import Image from "next/image";
 
 // Dữ liệu trả về từ BE
 interface BackendRoom {
@@ -24,6 +25,8 @@ const toEnumStatus = (v: string) => {
 const fromEnumType = (v: string) => (v === "SINGLE" ? "Phòng đơn" : v === "DOUBLE" ? "Phòng đôi" : v);
 const fromEnumStatus = (v: string) =>
   v === "AVAILABLE" ? "Trống" : v === "OCCUPIED" ? "Đang sử dụng" : v === "RESERVED" ? "Đã đặt" : v;
+
+import styles from "./page.module.css";
 
 export default function EditRoomPage() {
   const router = useRouter();
@@ -123,50 +126,48 @@ export default function EditRoomPage() {
     }
   };
 
-  if (loading) return <p className="p-8 text-gray-700 text-lg">Đang tải dữ liệu...</p>;
+  if (loading) return <p className={styles.main}>Đang tải dữ liệu...</p>;
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8 text-gray-900 text-lg">
-      <div className="max-w-2xl mx-auto bg-white p-8 shadow-lg rounded-lg">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Chỉnh sửa phòng</h1>
+    <main className={styles.main}>
+      <div className={styles.container}>
+        <h1 className={styles.title}>Chỉnh sửa phòng</h1>
 
-        {error && (
-          <p className="text-red-600 font-semibold mb-4 border border-red-200 bg-red-50 p-3 rounded">{error}</p>
-        )}
+        {error && <p className={styles.error}>{error}</p>}
 
-        <form onSubmit={handleUpdate} className="space-y-5">
+        <form onSubmit={handleUpdate} className={styles.form}>
           <div>
-            <label className="block font-semibold mb-2">Mã/Số phòng</label>
+            <label className={styles.label}>Mã/Số phòng</label>
             <input
               type="text"
               name="name"
               value={form.name}
               onChange={handleChange}
-              className="border rounded w-full px-4 py-2"
+              className={styles.input}
             />
           </div>
 
           <div>
-            <label className="block font-semibold mb-2">Loại phòng</label>
-            <select name="type" value={form.type} onChange={handleChange} className="border rounded w-full px-4 py-2">
+            <label className={styles.label}>Loại phòng</label>
+            <select name="type" value={form.type} onChange={handleChange} className={styles.select}>
               <option value="Phòng đơn">Phòng đơn</option>
               <option value="Phòng đôi">Phòng đôi</option>
             </select>
           </div>
 
           <div>
-            <label className="block font-semibold mb-2">Giá (VNĐ)</label>
-            <input type="number" name="price" value={form.price} onChange={handleChange} className="border rounded w-full px-4 py-2" />
+            <label className={styles.label}>Giá (VNĐ)</label>
+            <input type="number" name="price" value={form.price} onChange={handleChange} className={styles.input} />
           </div>
 
           <div>
-            <label className="block font-semibold mb-2">Tầng</label>
-            <input type="number" name="floor" value={form.floor} onChange={handleChange} className="border rounded w-full px-4 py-2" />
+            <label className={styles.label}>Tầng</label>
+            <input type="number" name="floor" value={form.floor} onChange={handleChange} className={styles.input} />
           </div>
 
           <div>
-            <label className="block font-semibold mb-2">Trạng thái</label>
-            <select name="status" value={form.status} onChange={handleChange} className="border rounded w-full px-4 py-2">
+            <label className={styles.label}>Trạng thái</label>
+            <select name="status" value={form.status} onChange={handleChange} className={styles.select}>
               <option value="Trống">Trống</option>
               <option value="Đang sử dụng">Đang sử dụng</option>
               <option value="Đã đặt">Đã đặt</option>
@@ -174,26 +175,26 @@ export default function EditRoomPage() {
           </div>
 
           <div>
-            <label className="block font-semibold mb-2">Tiện nghi</label>
+            <label className={styles.label}>Tiện nghi</label>
             <input
               type="text"
               name="amenities"
               value={form.amenities}
               onChange={handleChange}
-              className="border rounded w-full px-4 py-2"
+              className={styles.input}
               placeholder="VD: View biển, Bồn tắm, Wifi..."
             />
           </div>
 
           <div>
-            <label className="block font-semibold mb-2">Ảnh phòng (tùy chọn)</label>
-            <input type="file" accept="image/*" onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)} className="w-full" />
+            <label className={styles.label}>Ảnh phòng (tùy chọn)</label>
+            <input type="file" accept="image/*" onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)} className={styles.file} />
             {form.imageFileData && (
-              <img src={form.imageFileData} alt="Preview" className="mt-3 w-48 h-32 object-cover rounded border" />
+              <Image src={form.imageFileData} alt="Preview" width={192} height={128} className={styles.imagePreview} />
             )}
           </div>
 
-          <button type="submit" disabled={saving} className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition text-lg font-semibold">
+          <button type="submit" disabled={saving} className={styles.submit}>
             {saving ? "Đang lưu..." : "Cập nhật phòng"}
           </button>
         </form>

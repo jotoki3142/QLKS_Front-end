@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type RoomForm = {
   name: string; // roomNumber
@@ -20,6 +21,8 @@ const toEnumStatus = (v: string) => {
   if (v === "Đã đặt") return "RESERVED";
   return "AVAILABLE";
 };
+
+import styles from "./page.module.css";
 
 export default function AddRoomPage() {
   const router = useRouter();
@@ -118,26 +121,22 @@ export default function AddRoomPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8 text-gray-900 text-base">
-      <div className="max-w-2xl mx-auto bg-white p-6 shadow rounded">
-        <h1 className="text-2xl font-bold mb-4">Thêm phòng mới</h1>
+    <main className={styles.main}>
+      <div className={styles.container}>
+        <h1 className={styles.title}>Thêm phòng mới</h1>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-            {error}
-          </div>
-        )}
+        {error && <div className={styles.errorAlert}>{error}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className={styles.form}>
           {/* Số phòng  */}
           <div>
-            <label className="block font-medium mb-1">Mã/Số phòng</label>
+            <label className={styles.label}>Mã/Số phòng</label>
             <input
               name="name"
               type="text"
               value={room.name}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              className={styles.input}
               placeholder="VD: 101 hoặc MP101"
               required
             />
@@ -145,12 +144,12 @@ export default function AddRoomPage() {
 
           {/* Loại phòng */}
           <div>
-            <label className="block font-medium mb-1">Loại phòng</label>
+            <label className={styles.label}>Loại phòng</label>
             <select
               name="type"
               value={room.type}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              className={styles.select}
             >
               <option>Phòng đơn</option>
               <option>Phòng đôi</option>
@@ -159,13 +158,13 @@ export default function AddRoomPage() {
 
           {/* Giá */}
           <div>
-            <label className="block font-medium mb-1">Giá (VNĐ)</label>
+            <label className={styles.label}>Giá (VNĐ)</label>
             <input
               name="price"
               type="number"
               value={room.price}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              className={styles.input}
               min={0}
               required
             />
@@ -173,13 +172,13 @@ export default function AddRoomPage() {
 
           {/* Tầng */}
           <div>
-            <label className="block font-medium mb-1">Tầng</label>
+            <label className={styles.label}>Tầng</label>
             <input
               name="floor"
               type="number"
               value={room.floor}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              className={styles.input}
               min={1}
               placeholder="Ví dụ: 1, 2, 3..."
               required
@@ -188,12 +187,12 @@ export default function AddRoomPage() {
 
           {/* Trạng thái */}
           <div>
-            <label className="block font-medium mb-1">Trạng thái</label>
+            <label className={styles.label}>Trạng thái</label>
             <select
               name="status"
               value={room.status}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              className={styles.select}
             >
               <option>Trống</option>
               <option>Đang sử dụng</option>
@@ -203,46 +202,44 @@ export default function AddRoomPage() {
 
           {/* Tiện nghi (nhập text) */}
           <div>
-            <label className="block font-medium mb-1">Tiện nghi</label>
+            <label className={styles.label}>Tiện nghi</label>
             <input
               name="amenities"
               type="text"
               value={room.amenities}
               onChange={handleChange}
-              className="w-full border rounded px-3 py-2"
+              className={styles.input}
               placeholder="VD: Bồn tắm, View biển, Wifi..."
             />
           </div>
 
           {/* Ảnh: upload file (tùy chọn) */}
           <div>
-            <label className="block font-medium mb-1">Upload ảnh (tùy chọn)</label>
+            <label className={styles.label}>Upload ảnh (tùy chọn)</label>
             <input
               type="file"
               accept="image/*"
               onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
-              className="w-full"
+              className={styles.file}
             />
           </div>
 
           {/* Preview ảnh nếu có */}
           <div>
-            <p className="block font-medium mb-1">Preview ảnh</p>
-            <div className="w-48 h-36 border rounded overflow-hidden">
-              <img
+            <p className={styles.label}>Preview ảnh</p>
+            <div className={styles.previewBox}>
+              <Image
                 src={room.imageFileData ?? "/default-room.jpg"}
                 alt="preview"
-                className="w-full h-full object-cover"
+                width={192}
+                height={144}
+                className={styles.previewImage}
               />
             </div>
           </div>
 
           <div>
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 transition disabled:opacity-60"
-            >
+            <button type="submit" disabled={saving} className={styles.submit}>
               {saving ? "Đang lưu..." : "Thêm phòng"}
             </button>
           </div>
