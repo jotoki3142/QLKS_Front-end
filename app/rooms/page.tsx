@@ -54,7 +54,7 @@ const [sortField, setSortField] = useState<"roomId" | "price" | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // 🧩 Load dữ liệu phòng từ backend (proxy qua Next.js)
+  //Load dữ liệu phòng từ backend (proxy qua Next.js)
   useEffect(() => {
     const load = async () => {
       const res = await fetch("/api/rooms/api/list", { cache: "no-store" });
@@ -69,7 +69,7 @@ const [sortField, setSortField] = useState<"roomId" | "price" | null>(null);
     });
   }, []);
 
-  // 🔍 Tìm kiếm
+  // Tìm kiếm
   useEffect(() => {
     const keyword = search.toLowerCase();
     const filtered = rooms.filter(
@@ -82,7 +82,7 @@ const [sortField, setSortField] = useState<"roomId" | "price" | null>(null);
     setCurrentPage(1);
   }, [search, rooms]);
 
-  // 🔁 Sắp xếp
+  // Sắp xếp
 const handleSort = (field: "roomId" | "price") => {
     let newOrder: "asc" | "desc" = "asc";
     if (sortField === field && sortOrder === "asc") newOrder = "desc";
@@ -97,7 +97,7 @@ const handleSort = (field: "roomId" | "price") => {
     setFilteredRooms(sorted);
   };
 
-  // 📄 Phân trang
+  // Phân trang
   const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
   const paginatedRooms = filteredRooms.slice(
     (currentPage - 1) * itemsPerPage,
@@ -106,7 +106,7 @@ const handleSort = (field: "roomId" | "price") => {
 
   const handlePageChange = (page: number) => setCurrentPage(page);
 
-  // 🗑 Xóa phòng (gọi BE)
+  // Xóa phòng (gọi BE)
   const handleDelete = async (roomId: number, displayNumber: string) => {
     if (!confirm(`Bạn có chắc muốn xóa phòng ${displayNumber}?`)) return;
     const res = await fetch(`/api/rooms/api/delete/${roomId}`, { method: "POST" });
@@ -194,7 +194,6 @@ const handleSort = (field: "roomId" | "price") => {
                   <td className="py-3 px-5">
                     <img
                       src={room.image || "/default-room.jpg"}
-                      alt={room.name}
                       className="w-20 h-16 object-cover rounded-md border"
                     />
                   </td>
