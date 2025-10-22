@@ -52,6 +52,8 @@ export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
   const [search, setSearch] = useState("");
+  const [roomTypeFilter, setRoomTypeFilter] = useState("");
+  const [floorFilter, setFloorFilter] = useState("");
   const [sortField, setSortField] = useState<"roomId" | "price" | "roomNumber" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,17 +75,26 @@ export default function RoomsPage() {
   }, []);
 
   // Tìm kiếm
-  useEffect(() => {
+  const handleSearch = () => {
     const keyword = search.toLowerCase();
     const filtered = rooms.filter(
       (room) =>
-        room.roomNumber.toLowerCase().includes(keyword) ||
-        room.type.toLowerCase().includes(keyword) ||
-        room.status.toLowerCase().includes(keyword)
+        (room.roomNumber.toLowerCase().includes(keyword) ||
+          room.status.toLowerCase().includes(keyword)) &&
+        (roomTypeFilter === "" || room.type === roomTypeFilter) &&
+        (floorFilter === "" || (room.floor && room.floor.toString() === floorFilter))
     );
     setFilteredRooms(filtered);
     setCurrentPage(1);
-  }, [search, rooms]);
+  };
+  
+  const clearFilters = () => {
+    setSearch("");
+    setRoomTypeFilter("");
+    setFloorFilter("");
+    setFilteredRooms(rooms);
+    setCurrentPage(1);
+  };
 
 // Sắp xếp
 const handleSort = (field: "roomId" | "price" | "roomNumber") => {
@@ -162,21 +173,30 @@ const handleSort = (field: "roomId" | "price" | "roomNumber") => {
 
           <div className={styles.filterGroup}>
             <label className={styles.filterLabel}>Loại phòng</label>
-            <select className={styles.select} defaultValue="">
+            <select
+              className={styles.select}
+              value={roomTypeFilter}
+              onChange={(e) => setRoomTypeFilter(e.target.value)}
+            >
               <option value="">Tất cả loại</option>
-              <option>Phòng đơn</option>
-              <option>Phòng đôi</option>
+              <option value="Phòng đơn">Phòng đơn</option>
+              <option value="Phòng đôi">Phòng đôi</option>
             </select>
           </div>
 
           <div className={styles.filterGroup}>
             <label className={styles.filterLabel}>Tầng</label>
-            <input className={styles.input} placeholder="Nhập tầng..." />
+            <input
+              className={styles.input}
+              placeholder="Nhập tầng..."
+              value={floorFilter}
+              onChange={(e) => setFloorFilter(e.target.value)}
+            />
           </div>
 
           <div className={styles.filterActions}>
-            <button type="button" className={`${styles.btn} ${styles.btnPrimary}`}>Tìm kiếm</button>
-            <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setSearch("")}>Xóa bộ lọc</button>
+            <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSearch}>Tìm kiếm</button>
+            <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>Xóa bộ lọc</button>
           </div>
         </div>
         <div className={styles.filterRight}>
