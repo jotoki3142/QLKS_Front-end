@@ -235,7 +235,7 @@ export default function AddRoomPage() {
             <p className={styles.label}>Preview ảnh</p>
             <div className={styles.previewBox}>
               <Image
-                src={room.imageFileData ?? "/default-room.jpg"}
+                src={room.imageFileData ?? "/pics/default-room.jpg"}
                 alt="preview"
                 width={192}
                 height={144}
