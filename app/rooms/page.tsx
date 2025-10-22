@@ -42,7 +42,7 @@ function mapRoom(r: BackendRoom): Room {
     floor: r.roomFloor,
     amenities: r.roomAmenities ?? "",
     status: statusMap[r.roomStatus] ?? String(r.roomStatus),
-    image: r.imageUrl ?? "/default-room.jpg",
+    image: r.imageUrl ?? "/pics/default-room.jpg",
   };
 }
 
@@ -256,7 +256,7 @@ const handleSort = (field: "roomId" | "price" | "roomNumber") => {
                 <tr key={room.roomId} className={styles.tr}>
                   <td className={styles.td} style={{ fontWeight: 600 }}>{room.roomId}</td>
                   <td className={styles.td}>
-                    <Image src={room.image || "/default-room.jpg"} width={80} height={64} className={styles.roomImage} alt="room" />
+                    <Image src={room.image || "/pics/default-room.jpg"} width={80} height={64} className={styles.roomImage} alt="room" />
                   </td>
                   <td className={styles.td}>{room.roomNumber}</td>
                   <td className={styles.td}>{room.type}</td>
