@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import styles from "./page.module.css";
 
 type RoomForm = {
   name: string; // roomNumber
@@ -21,8 +22,6 @@ const toEnumStatus = (v: string) => {
   if (v === "Đã đặt") return "RESERVED";
   return "AVAILABLE";
 };
-
-import styles from "./page.module.css";
 
 export default function AddRoomPage() {
   const router = useRouter();

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
+import styles from "./page.module.css";
 
 // Dữ liệu trả về từ BE
 interface BackendRoom {
@@ -26,7 +27,6 @@ const fromEnumType = (v: string) => (v === "SINGLE" ? "Phòng đơn" : v === "DO
 const fromEnumStatus = (v: string) =>
   v === "AVAILABLE" ? "Trống" : v === "OCCUPIED" ? "Đang sử dụng" : v === "RESERVED" ? "Đã đặt" : v;
 
-import styles from "./page.module.css";
 
 export default function EditRoomPage() {
   const router = useRouter();
