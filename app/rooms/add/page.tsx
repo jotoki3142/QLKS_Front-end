@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./page.module.css";
+import { toast } from "react-toastify";
 
 type RoomForm = {
   name: string; // roomNumber
@@ -25,7 +26,6 @@ const toEnumStatus = (v: string) => {
 
 export default function AddRoomPage() {
   const router = useRouter();
-  const [error, setError] = useState<string>("");
   const [saving, setSaving] = useState(false);
 
   const [room, setRoom] = useState<RoomForm>({
@@ -60,22 +60,21 @@ export default function AddRoomPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     if (saving) return;
 
     const priceNum = Number(room.price);
     const floorNum = Number(room.floor);
 
     if (!room.name || room.name.trim().length < 1) {
-      setError("⚠️ Vui lòng nhập SỐ PHÒNG.");
+      toast.error("Vui lòng nhập SỐ PHÒNG.");
       return;
     }
     if (!room.price || isNaN(priceNum) || priceNum <= 0) {
-      setError("⚠️ Vui lòng nhập GIÁ phòng hợp lệ (> 0).");
+      toast.error("Vui lòng nhập GIÁ phòng hợp lệ (> 0).");
       return;
     }
     if (!room.floor || isNaN(floorNum) || floorNum <= 0) {
-      setError("⚠️ Tầng phải là số dương (>= 1).");
+      toast.error("Tầng phải là số dương (>= 1).");
       return;
     }
 
@@ -101,7 +100,7 @@ export default function AddRoomPage() {
       });
 
       if (res.status === 409) {
-        setError("⚠️ Số phòng đã tồn tại. Vui lòng chọn số khác hoặc chỉnh sửa phòng hiện có.");
+        toast.error("Số phòng đã tồn tại. Vui lòng chọn số khác hoặc chỉnh sửa phòng hiện có.");
         return;
       }
       if (!res.ok) {
@@ -109,11 +108,11 @@ export default function AddRoomPage() {
         throw new Error(text || "Request failed");
       }
 
-      alert("✅ Thêm phòng thành công!");
+      toast.success("Thêm phòng thành công!");
       router.push("/rooms");
     } catch (err) {
       console.error(err);
-      setError("Đã có lỗi khi lưu phòng. Vui lòng thử lại.");
+      toast.error("Đã có lỗi khi lưu phòng. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
@@ -124,12 +123,10 @@ export default function AddRoomPage() {
       <div className={styles.container}>
         <h1 className={styles.title}>Thêm phòng mới</h1>
 
-        {error && <div className={styles.errorAlert}>{error}</div>}
-
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Số phòng  */}
           <div>
-            <label className={styles.label}>Mã/Số phòng</label>
+            <label className={styles.label}>Số phòng</label>
             <input
               name="name"
               type="text"

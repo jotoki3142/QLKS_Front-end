@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import styles from "./page.module.css";
+import { toast } from "react-toastify";
 
 // Dữ liệu trả về từ BE
 interface BackendRoom {
@@ -33,7 +34,6 @@ export default function EditRoomPage() {
   const params = useParams();
   const backendId = String(params?.id ?? "");
 
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -65,7 +65,7 @@ export default function EditRoomPage() {
     };
     load().catch((e) => {
       console.error(e);
-      setError("Không tải được dữ liệu phòng");
+      toast.error("Không tải được dữ liệu phòng");
       setLoading(false);
     });
   }, [backendId]);
@@ -87,13 +87,12 @@ export default function EditRoomPage() {
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     const priceNum = Number(form.price);
     const floorNum = Number(form.floor);
-    if (!form.name.trim()) return setError("⚠️ Số phòng không được để trống!");
-    if (!priceNum || priceNum <= 0) return setError("⚠️ Giá phòng phải lớn hơn 0!");
-    if (!floorNum || floorNum <= 0) return setError("⚠️ Tầng phải là số dương!");
+    if (!form.name.trim()) return toast.error("Số phòng không được để trống!");
+    if (!priceNum || priceNum <= 0) return toast.error("Giá phòng phải lớn hơn 0!");
+    if (!floorNum || floorNum <= 0) return toast.error("Tầng phải là số dương!");
 
     setSaving(true);
     try {
@@ -109,18 +108,18 @@ export default function EditRoomPage() {
 
       const res = await fetch(`/api/rooms/api/edit/${backendId}`, { method: "POST", body: fd });
       if (res.status === 409) {
-        setError("⚠️ Số phòng đã tồn tại. Vui lòng chọn số khác.");
+        toast.error("Số phòng đã tồn tại. Vui lòng chọn số khác.");
         return;
       }
       if (!res.ok) {
         const t = await res.text();
         throw new Error(t || "Request failed");
       }
-      alert("✅ Cập nhật phòng thành công!");
+      toast.success("Cập nhật phòng thành công!");
       router.push("/rooms");
     } catch (err) {
       console.error(err);
-      setError("Có lỗi khi cập nhật phòng");
+      toast.error("Có lỗi khi cập nhật phòng");
     } finally {
       setSaving(false);
     }
@@ -132,8 +131,6 @@ export default function EditRoomPage() {
     <main className={styles.main}>
       <div className={styles.container}>
         <h1 className={styles.title}>Chỉnh sửa phòng</h1>
-
-        {error && <p className={styles.error}>{error}</p>}
 
         <form onSubmit={handleUpdate} className={styles.form}>
           <div>
@@ -176,7 +173,9 @@ export default function EditRoomPage() {
                   ? styles.statusAvailable
                   : form.status === "Đang sử dụng"
                   ? styles.statusOccupied
-                  : styles.statusReserved
+                  : form.status === "RESERVED"
+                  ? styles.statusReserved
+                  : ''
               }`}
             >
               <option value="Trống">Trống</option>
