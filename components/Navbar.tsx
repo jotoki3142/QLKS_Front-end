@@ -9,12 +9,12 @@ export default function Navbar() {
   const navItems = [
     { label: "Trang chủ", href: "/" },
     { label: "Quản lý phòng", href: "/rooms" },
-    { label: "Khách hàng", href: "/customers" },
+    { label: "Khách hàng", href: "/customer" },
     { label: "Đặt phòng", href: "/booking" },
-    { label: "Nhân viên", href: "/staff" },
-    { label: "Dịch vụ", href: "/services" },
+    { label: "Nhân viên", href: "/employee" },
+    { label: "Dịch vụ", href: "/service" },
     { label: "Sử dụng dịch vụ", href: "/usage" },
-    { label: "Hóa đơn", href: "/invoice" },
+    { label: "Hóa đơn", href: "/bill" },
   ];
 
   return (
