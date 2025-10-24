@@ -9,7 +9,7 @@
 /* Banner */
 .pageHeader {
   margin: 0 -2rem 1rem -2rem;
-  background: linear-gradient(90deg, #3b82f6 0%, #fb9f00 100%);
+  background: linear-gradient(90deg, #425383 100%);
   color: #fff;
 }
 .pageHeaderContent {
@@ -57,7 +57,7 @@
 /* Table */
 .tableWrap { overflow-x: auto; background: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; }
 .table { min-width: 100%; border-collapse: collapse; font-size: 1rem; }
-.thead { background: #f9fafb; color: #374151; }
+.thead { background: #425383; color: #ffffff; }
 .th, .td { padding: 0.9rem 1rem; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: middle; }
 .clickable { cursor: pointer; user-select: none; }
 .sortIcon { font-size: 0.9rem; margin-left: 0.25rem; }
@@ -84,8 +84,8 @@
 
 /* Pagination */
 .pagination { display: flex; justify-content: center; margin-top: 1rem; }
-.pagerGroup { display: inline-flex; border: 1px solid #d1d5db; border-radius: 0.375rem; overflow: hidden; background: #fff; }
-.pageButton { padding: 0.4rem 0.75rem; border: none; border-left: 1px solid #d1d5db; background: #fff; color: #2563eb; font-size: 1rem; }
+.pagerGroup { display: inline-flex; border: 1px solid #dbd1d1; border-radius: 0.375rem; overflow: hidden; background: #fff; }
+.pageButton { padding: 0.4rem 0.75rem; border: none; border-left: 1px solid #dbd1d1; background: #fff; color: #2563eb; font-size: 1rem; }
 .pageButton:first-child { border-left: none; }
 .pageButton:hover { background: #f3f4f6; }
 .pageButtonActive { background: #e0e7ff; color: #1d4ed8; font-weight: 700; }
