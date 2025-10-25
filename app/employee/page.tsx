@@ -44,7 +44,6 @@ export default function EmployeePage() {
           </div>
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Chức vụ</label>
             <select
               className={styles.select}
               value={filters.position}
@@ -59,7 +58,6 @@ export default function EmployeePage() {
           </div>
 
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Email</label>
             <input
               className={styles.input}
               type="email"
