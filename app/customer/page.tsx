@@ -31,12 +31,14 @@ interface BackendCustomer {
 }
 
 function mapCustomer(c: BackendCustomer): Customer {
+  const rawPhone = String(c.phone ?? "");
+  const normalizedPhone = /^\d{9}$/.test(rawPhone) ? ("0" + rawPhone) : rawPhone;
   return {
     customerId: c.customerId,
     code: c.customerCode ?? String(c.customerId).padStart(3, "0"),
     fullName: c.fullName,
     nationalId: c.nationalId,
-    phone: c.phone,
+    phone: normalizedPhone,
     email: c.email ?? "",
     nationality: c.nationality ?? "",
     address: c.address ?? "",
