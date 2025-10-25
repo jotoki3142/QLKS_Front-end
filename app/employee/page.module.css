@@ -30,7 +30,7 @@
 }
 
 .searchBox button {
-  background-color: #385490;
+  background-color: #2e64da;
   color: white;
   padding: 8px 15px;
   border: none;
@@ -57,7 +57,7 @@
 }
 
 .addBtn {
-  background-color: #0369a1;
+  background-color: #2e64da;
   color: white;
   padding: 8px 15px;
   border-radius: 6px;
@@ -165,10 +165,10 @@
 .input:focus, .select:focus { outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.28); }
 .filterActions { display: flex; gap: 0.5rem; }
 .btn { border: 1px solid #d1d5db; background: #fff; color: #111827; padding: 0.55rem 0.9rem; border-radius: 9999px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-.btnPrimary { background: #5b8094; color: #fff; border-color: #5b8094; }
+.btnPrimary { background: #2563eb; color: #fff; border-color: #2563eb; }
 .btnGhost { background: #fff; border-color: #9ca3af; color: #374151; }
-.addLink { background: #5b8094; color: #fff; padding: 0.45rem 0.75rem; border-radius: 9999px; text-decoration: none; font-weight: 600; }
-.addLink:hover { background: #4d6d7e; }
+.addLink { background: #2563eb; color: #fff; padding: 0.45rem 0.75rem; border-radius: 9999px; text-decoration: none; font-weight: 600; }
+.addLink:hover { background: #1d4ed8; }
 
 /* Info line */
 .listInfo { display: flex; align-items: center; gap: 0.5rem; color: #374151; margin: 0.5rem 0 0.75rem; font-size: 0.95rem; }
