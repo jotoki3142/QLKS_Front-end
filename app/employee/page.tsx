@@ -1,26 +1,43 @@
 "use client";
 
 import styles from "./page.module.css";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
+import { getEmployees, Employee as ApiEmployee, deleteEmployee } from "@/utils/api";
 
-type Employee = {
-  id: number;
-  name: string;
-  role: string;
-  phone: string;
-  email: string;
-  shift: string;
-  salary: number;
-  status: string;
-};
+// Use Employee type from API
+type Employee = ApiEmployee;
 
 export default function EmployeePage() {
   const [filters, setFilters] = useState({ name: "", position: "", email: "" });
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Data (empty placeholder for now)
-  const employees: Employee[] = [];
-  let filtered = employees; // TODO: apply filters when wiring backend
+  // Fetch employees from API
+  useEffect(() => {
+    loadEmployees();
+  }, []);
+
+  const loadEmployees = async () => {
+    try {
+      setLoading(true);
+      const data = await getEmployees();
+      setEmployees(data);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách nhân viên:", error);
+      alert("Không thể tải danh sách nhân viên");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Apply filters
+  let filtered = employees.filter(emp => {
+    if (filters.name && !emp.name.toLowerCase().includes(filters.name.toLowerCase())) return false;
+    if (filters.position && emp.position !== filters.position) return false;
+    if (filters.email && !emp.email.toLowerCase().includes(filters.email.toLowerCase())) return false;
+    return true;
+  });
 
   // Sorting (name, salary)
   const [sortField, setSortField] = useState<"name" | "salary" | null>(null);
@@ -52,6 +69,47 @@ export default function EmployeePage() {
     setSortField(field);
     setSortOrder(newOrder);
   };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) return;
+    
+    try {
+      await deleteEmployee(id);
+      alert('Xóa nhân viên thành công!');
+      loadEmployees(); // Reload list
+    } catch (error) {
+      console.error('Lỗi khi xóa nhân viên:', error);
+      alert('Không thể xóa nhân viên');
+    }
+  };
+
+  const getRoleDisplay = (role: string) => {
+    const roles: Record<string, string> = {
+      'MANAGER': 'Quản lý',
+      'RECEPTIONIST': 'Lễ tân',
+      'HOUSEKEEPING': 'Buồng phòng',
+      'SECURITY': 'Bảo vệ'
+    };
+    return roles[role] || role;
+  };
+
+  const getShiftDisplay = (shift: string) => {
+    const shifts: Record<string, string> = {
+      'MORNING': 'Ca sáng',
+      'AFTERNOON': 'Ca chiều',
+      'NIGHT': 'Ca tối'
+    };
+    return shifts[shift] || shift;
+  };
+
+  const getStatusDisplay = (status: string) => {
+    const statuses: Record<string, string> = {
+      'WORKING': 'Đang làm',
+      'RESIGNED': 'Nghỉ việc'
+    };
+    return statuses[status] || status;
+  };
+
   return (
     <main className={styles.main}>
       {/* Header banner */}
@@ -86,10 +144,10 @@ export default function EmployeePage() {
               onChange={(e) => setFilters({ ...filters, position: e.target.value })}
             >
               <option value="">Tất cả chức vụ</option>
-              <option value="Quản lý">Quản lý</option>
-              <option value="Lễ tân">Lễ tân</option>
-              <option value="Buồng phòng">Buồng phòng</option>
-              <option value="Bảo vệ">Bảo vệ</option>
+              <option value="MANAGER">Quản lý</option>
+              <option value="RECEPTIONIST">Lễ tân</option>
+              <option value="HOUSEKEEPING">Buồng phòng</option>
+              <option value="SECURITY">Bảo vệ</option>
             </select>
           </div>
 
@@ -105,7 +163,6 @@ export default function EmployeePage() {
           </div>
 
           <div className={styles.filterActions}>
-            <button type="button" className={`${styles.btn} ${styles.btnPrimary}`}>Tìm kiếm</button>
             <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setFilters({ name: "", position: "", email: "" })}>Xóa bộ lọc</button>
           </div>
         </div>
@@ -143,18 +200,35 @@ export default function EmployeePage() {
             </tr>
           </thead>
           <tbody>
-
-            {paginated.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={9} className={`${styles.td} ${styles.center}`}>Đang tải...</td>
+              </tr>
+            ) : paginated.length === 0 ? (
               <tr>
                 <td colSpan={9} className={`${styles.td} ${styles.center}`}>Không có nhân viên phù hợp...</td>
               </tr>
             ) : (
-              paginated.map((e: any) => (
-                <tr key={e.id}>
-                  {/* Replace with real fields when wiring backend */}
+              paginated.map((e: Employee) => (
+                <tr key={e.employeeId}>
+                  <td className={styles.td}>{e.employeeId}</td>
+                  <td className={styles.td}>{e.name}</td>
+                  <td className={styles.td}>{getRoleDisplay(e.position)}</td>
+                  <td className={styles.td}>{e.phoneNumber}</td>
+                  <td className={styles.td}>{e.email}</td>
+                  <td className={styles.td}>{getShiftDisplay(e.shift)}</td>
+                  <td className={styles.td}>{e.salary.toLocaleString('vi-VN')} VNĐ</td>
+                  <td className={styles.td}>{getStatusDisplay(e.employeeStatus)}</td>
+                  <td className={`${styles.td} ${styles.center}`}>
+                    <Link href={`/employee/edit/${e.employeeId}`} className={styles.btnEdit}>Sửa</Link>
+                    <button className={styles.btnDelete} onClick={() => handleDelete(e.employeeId)}>Xóa</button>
+                  </td>
                 </tr>
               ))
             )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -170,3 +244,6 @@ export default function EmployeePage() {
           </div>
         </div>
       )}
+    </main>
+  );
+}

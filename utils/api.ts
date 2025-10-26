@@ -31,7 +31,16 @@ const apiFetch = async (url: string, options?: RequestInit) => {
     });
 
     if (!response.ok) {
-        throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+        let errorMessage = `API call failed: ${response.status} ${response.statusText}`;
+        try {
+            const errorData = await response.text();
+            if (errorData) {
+                errorMessage += ` - ${errorData}`;
+            }
+        } catch (e) {
+            // Ignore if we can't parse error
+        }
+        throw new Error(errorMessage);
     }
 
     if (response.status === 204 || options?.method === 'DELETE') {
@@ -78,6 +87,62 @@ export const updateService = (id: number, updatedData: NewService): Promise<Serv
 
 export const deleteService = (id: number): Promise<null> => {
     return apiFetch(`${API_BASE_URL}/services/${id}`, {
+        method: 'DELETE',
+    });
+};
+
+// --- Employee Types ---
+export type EmployeeRole = 'MANAGER' | 'RECEPTIONIST' | 'HOUSEKEEPING' | 'SECURITY';
+export type EmployeeShift = 'MORNING' | 'AFTERNOON' | 'NIGHT';
+export type EmployeeStatus = 'WORKING' | 'RESIGNED';
+
+export interface Employee {
+    employeeId: number;
+    name: string;
+    position: EmployeeRole; // Maps to 'role' in backend entity
+    phoneNumber: number;
+    email: string;
+    shift: EmployeeShift;
+    salary: number; // Will be sent as number, backend converts to BigDecimal
+    employeeStatus: EmployeeStatus;
+}
+
+export type NewEmployee = Omit<Employee, 'employeeId'>;
+
+// --- Employee API Functions ---
+export const getEmployees = (): Promise<Employee[]> => {
+    return apiFetch(`${API_BASE_URL}/employee/api/list`);
+};
+
+export const getEmployeeById = (id: number): Promise<Employee> => {
+    return apiFetch(`${API_BASE_URL}/employee/api/${id}`);
+};
+
+export const addEmployee = (newEmployee: NewEmployee): Promise<Employee> => {
+    // Clean the data - remove empty strings that would cause enum parsing errors
+    const cleanedData = {
+        ...newEmployee,
+        position: newEmployee.position || undefined,
+        shift: newEmployee.shift || undefined,
+    };
+    
+    console.log('Cleaned employee data:', cleanedData);
+    
+    return apiFetch(`${API_BASE_URL}/employee/api/add`, {
+        method: 'POST',
+        body: JSON.stringify(cleanedData),
+    });
+};
+
+export const updateEmployee = (id: number, updatedData: NewEmployee): Promise<Employee> => {
+    return apiFetch(`${API_BASE_URL}/employee/api/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updatedData),
+    });
+};
+
+export const deleteEmployee = (id: number): Promise<null> => {
+    return apiFetch(`${API_BASE_URL}/employee/api/${id}`, {
         method: 'DELETE',
     });
 };

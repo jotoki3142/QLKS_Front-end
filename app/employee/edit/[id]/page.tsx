@@ -2,7 +2,7 @@ import styles from "./page.module.css";
 import Link from "next/link";
 
 export default async function EditEmployee({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params; // ✅ phải await vì params là Promise
+  await params; // ✅ phải await vì params là Promise
   return (
     <main className={styles.main}>
       <section className={styles.pageHeader}>

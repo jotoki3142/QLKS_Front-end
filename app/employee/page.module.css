@@ -191,11 +191,11 @@
 .sortIcon { margin-left: 6px; font-size: .9rem; }
 
 /* Action buttons */
-.updateBtn, .deleteBtn { display: inline-block; padding: 0.35rem 0.6rem; border-radius: 9999px; text-decoration: none; font-weight: 600; border: 1px solid transparent; margin: 0 0.25rem; }
-.updateBtn { background: #3b82f6; color: #fff; }
-.updateBtn:hover { background: #425383; }
-.deleteBtn { background: #ef4444; color: #fff; }
-.deleteBtn:hover { background: #dc2626; }
+.updateBtn, .deleteBtn, .btnEdit, .btnDelete { display: inline-block; padding: 0.35rem 0.6rem; border-radius: 9999px; text-decoration: none; font-weight: 600; border: 1px solid transparent; margin: 0 0.25rem; cursor: pointer; }
+.updateBtn, .btnEdit { background: #3b82f6; color: #fff; }
+.updateBtn:hover, .btnEdit:hover { background: #2563eb; }
+.deleteBtn, .btnDelete { background: #ef4444; color: #fff; }
+.deleteBtn:hover, .btnDelete:hover { background: #dc2626; }
 
 /* Pagination */
 .pagination { display: flex; justify-content: center; margin-top: 0.75rem; }

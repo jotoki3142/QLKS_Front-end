@@ -2,7 +2,7 @@ import styles from "./page.module.css";
 import Link from "next/link";
 
 export default async function EditBooking({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  await params;
 
   return (
     <main className={styles.main}>
