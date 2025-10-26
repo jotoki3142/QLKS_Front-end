@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import styles from "./page.module.css";
+import { toast } from "react-toastify";
+import ConfirmPopup from "@/components/ConfirmPopup";
 
 interface Room {
   roomId: number; // Mã phòng (PK tự tăng)
@@ -46,8 +49,6 @@ function mapRoom(r: BackendRoom): Room {
   };
 }
 
-import styles from "./page.module.css";
-
 export default function RoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
@@ -58,6 +59,8 @@ export default function RoomsPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<{ roomId: number; displayNumber: string } | null>(null);
 
   //Load dữ liệu phòng từ backend (proxy qua Next.js)
   useEffect(() => {
@@ -127,11 +130,21 @@ const handleSort = (field: "roomId" | "price" | "roomNumber") => {
   const handlePageChange = (page: number) => setCurrentPage(page);
 
   // Xóa phòng (gọi BE)
-  const handleDelete = async (roomId: number, displayNumber: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa phòng ${displayNumber}?`)) return;
+  const handleDelete = (roomId: number, displayNumber: string) => {
+    setRoomToDelete({ roomId, displayNumber });
+    setIsPopupOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!roomToDelete) return;
+
+    const { roomId, displayNumber } = roomToDelete;
+
     const res = await fetch(`/api/rooms/api/delete/${roomId}`, { method: "POST" });
     if (!res.ok) {
-      alert("Xóa phòng thất bại");
+      toast.error("Xóa phòng thất bại");
+      setIsPopupOpen(false);
+      setRoomToDelete(null);
       return;
     }
     // Reload list
@@ -142,7 +155,9 @@ const handleSort = (field: "roomId" | "price" | "roomNumber") => {
       setRooms(mapped);
       setFilteredRooms(mapped);
     }
-    alert(`✅ Đã xóa phòng ${displayNumber} thành công!`);
+    toast.success(`Đã xóa phòng ${displayNumber} thành công!`);
+    setIsPopupOpen(false);
+    setRoomToDelete(null);
   };
 
   return (
@@ -312,6 +327,12 @@ const handleSort = (field: "roomId" | "price" | "roomNumber") => {
           </div>
         </div>
       )}
+      <ConfirmPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        onConfirm={confirmDelete}
+        title={roomToDelete ? `Bạn có chắc muốn xóa phòng ${roomToDelete.displayNumber}?` : ""}
+      />
     </main>
   );
 }

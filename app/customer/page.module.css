@@ -6,20 +6,15 @@
   font-size: 1.0625rem;
 }
 
-/* Banner */
 .pageHeader {
   margin: 0 -2rem 1rem -2rem;
-  background: linear-gradient(90deg, #425383 100%);
+  background: #4a7ba8;
   color: #fff;
 }
-.pageHeaderContent {
-  max-width: 1280px;
-  padding: 1.25rem 2rem; /* py-5 px-8 */
-}
+.pageHeaderContent { max-width: 1280px; padding: 1.25rem 2rem; }
 .pageTitle { font-size: 2rem; font-weight: 700; margin: 0; }
 .pageSubtitle { margin: 0.25rem 0 0 0; opacity: 0.9; }
 
-/* Filters */
 .filters {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -31,18 +26,13 @@
   gap: 1rem;
   margin-bottom: 1rem;
 }
-.filterLeft {
-  display: grid;
-  grid-template-columns: 260px 200px 200px auto;
-  gap: 1rem;
-  align-items: end;
-}
+.filterLeft { display: grid; grid-template-columns: 260px 220px 200px auto; gap: 1rem; align-items: end; }
 .filterRight { display: flex; align-items: center; }
 .filterGroup { display: flex; flex-direction: column; gap: 0.375rem; }
 .filterLabel { font-size: 0.95rem; color: #374151; }
-.input, .select, .search { border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.6rem 0.9rem; font-size: 1rem; }
-.search { width: 200px; }
-.input:focus, .select:focus, .search:focus { outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.3); }
+.input, .search { border: 1px solid #d1d5db; border-radius: 0.5rem; padding: 0.6rem 0.9rem; font-size: 1rem; }
+.search { width: 220px; }
+.input:focus, .search:focus { outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.3); }
 .filterActions { display: flex; gap: 0.5rem; }
 .btn { border: 1px solid #d1d5db; background: #fff; color: #111827; padding: 0.55rem 0.9rem; border-radius: 0.5rem; font-weight: 600; }
 .btnPrimary { background: #2563eb; color: #fff; border-color: #2563eb; }
@@ -50,42 +40,28 @@
 .addLink { background: #2563eb; color: #fff; padding: 0.6rem 1rem; border-radius: 9999px; font-weight: 600; text-decoration: none; }
 .addLink:hover { background: #1d4ed8; }
 
-/* Info */
 .listInfo { display: flex; align-items: center; gap: 0.5rem; color: #374151; margin: 0.75rem 0 1rem 0; font-size: 0.95rem; }
 .infoDot { width: 1.1rem; height: 1.1rem; border-radius: 9999px; background: #111827; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; }
 
-/* Table */
 .tableWrap { overflow-x: auto; background: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; }
 .table { min-width: 100%; border-collapse: collapse; font-size: 1rem; }
-.thead { background: #425383; color: #ffffff; }
+.thead { background: #4a7ba8; color: #fff; }
 .th, .td { padding: 0.9rem 1rem; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: middle; }
 .clickable { cursor: pointer; user-select: none; }
 .sortIcon { font-size: 0.9rem; margin-left: 0.25rem; }
 .tr:hover { background: #fafafa; transition: background-color 200ms ease; }
-
-.roomImage { width: 5.2rem; height: 4rem; object-fit: cover; border-radius: 0.375rem; border: 1px solid #e5e7eb; }
 .center { text-align: center; }
 
-.statusAvailable { color: #16a34a; font-weight: 600; }
-.statusOccupied { color: #dc2626; font-weight: 600; }
-.statusReserved { color: #2563eb; /* blue-600 */ font-weight: 600; }
-
-/* Price cell */
-.priceBox { display: inline-flex; align-items: baseline; gap: 0.25rem; }
-.priceValue { font-weight: 700; color: #111827; }
-.priceNight { color: #6b7280; font-size: 0.9rem; }
-
-/* Actions */
+.actions { white-space: nowrap; }
 .btnUpdate, .btnDelete { display: inline-block; padding: 0.45rem 0.8rem; border-radius: 9999px; text-decoration: none; font-weight: 600; border: 1px solid transparent; margin: 0 0.25rem; }
 .btnUpdate { background: #2563eb; color: #fff; }
 .btnUpdate:hover { background: #1d4ed8; }
 .btnDelete { background: #ef4444; color: #fff; }
 .btnDelete:hover { background: #dc2626; }
 
-/* Pagination */
 .pagination { display: flex; justify-content: center; margin-top: 1rem; }
-.pagerGroup { display: inline-flex; border: 1px solid #dbd1d1; border-radius: 0.375rem; overflow: hidden; background: #fff; }
-.pageButton { padding: 0.4rem 0.75rem; border: none; border-left: 1px solid #dbd1d1; background: #fff; color: #2563eb; font-size: 1rem; }
+.pagerGroup { display: inline-flex; border: 1px solid #d1d5db; border-radius: 0.375rem; overflow: hidden; background: #fff; }
+.pageButton { padding: 0.4rem 0.75rem; border: none; border-left: 1px solid #d1d5db; background: #fff; color: #2563eb; font-size: 1rem; }
 .pageButton:first-child { border-left: none; }
 .pageButton:hover { background: #f3f4f6; }
 .pageButtonActive { background: #e0e7ff; color: #1d4ed8; font-weight: 700; }
