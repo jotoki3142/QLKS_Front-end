@@ -258,7 +258,7 @@ export default function EmployeePage() {
                                 <td className={styles.td} style={{ fontWeight: 600 }}>{e.employeeId}</td>
                                 <td className={styles.td}>{e.name}</td>
                                 <td className={styles.td}>{e.position ? getRoleDisplay(e.position) : '-'}</td>
-                                <td className={styles.td}>{e.phoneNumber}</td>
+                                <td className={styles.td}>{e.phoneNumber ? String(e.phoneNumber).padStart(10, '0') : '-'}</td>
                                 <td className={styles.td}>{e.email}</td>
                                 <td className={styles.td}>{e.shift ? getShiftDisplay(e.shift) : '-'}</td>
                                 <td className={styles.td}>{e.salary ? e.salary.toLocaleString('vi-VN') + ' VNĐ' : '-'}</td>
