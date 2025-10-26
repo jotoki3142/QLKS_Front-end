@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getEmployeeById, updateEmployee, NewEmployee, EmployeeRole, EmployeeShift, EmployeeStatus } from "@/utils/api";
+import { toast } from "react-toastify";
 
 export default function EditEmployee({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -43,7 +44,7 @@ export default function EditEmployee({ params }: { params: Promise<{ id: string 
                 });
             } catch (error) {
                 console.error("Lỗi khi tải thông tin nhân viên:", error);
-                alert("Không thể tải thông tin nhân viên");
+                toast.error("Không thể tải thông tin nhân viên");
             } finally {
                 setLoading(false);
             }
@@ -85,35 +86,35 @@ export default function EditEmployee({ params }: { params: Promise<{ id: string 
 
         // Validation
         if (!formData.name.trim()) {
-            alert('Vui lòng nhập họ tên');
+            toast.error('Vui lòng nhập họ tên');
             return;
         }
         if (!formData.position) {
-            alert('Vui lòng chọn chức vụ');
+            toast.error('Vui lòng chọn chức vụ');
             return;
         }
         if (!phoneInput || phoneInput.length !== 10) {
-            alert('Số điện thoại phải có đúng 10 số');
+            toast.error('Số điện thoại phải có đúng 10 số');
             return;
         }
         if (!phoneInput.startsWith('0')) {
-            alert('Số điện thoại phải bắt đầu bằng số 0');
+            toast.error('Số điện thoại phải bắt đầu bằng số 0');
             return;
         }
         if (!formData.email.trim()) {
-            alert('Vui lòng nhập email');
+            toast.error('Vui lòng nhập email');
             return;
         }
         if (!formData.email.endsWith('@gmail.com')) {
-            alert('Email phải có đuôi @gmail.com');
+            toast.error('Email phải có đuôi @gmail.com');
             return;
         }
         if (!formData.shift) {
-            alert('Vui lòng chọn ca làm việc');
+            toast.error('Vui lòng chọn ca làm việc');
             return;
         }
         if (formData.salary <= 0) {
-            alert('Lương phải lớn hơn 0');
+            toast.error('Lương phải lớn hơn 0');
             return;
         }
 
@@ -121,11 +122,12 @@ export default function EditEmployee({ params }: { params: Promise<{ id: string 
 
         try {
             await updateEmployee(employeeId, formData);
-            alert('Cập nhật nhân viên thành công!');
+            toast.success('Cập nhật nhân viên thành công!');
             router.push('/employee');
         } catch (error) {
             console.error("Lỗi khi cập nhật nhân viên:", error);
-            alert('Lỗi: Không thể cập nhật nhân viên.');
+            const errorMessage = error instanceof Error ? error.message : 'Không thể cập nhật nhân viên. Vui lòng thử lại sau.';
+            toast.error(errorMessage);
         }
     };
 
