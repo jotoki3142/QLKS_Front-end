@@ -1,291 +1,195 @@
-// app/service/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
-import { toast } from "react-toastify";
-import ConfirmPopup from "@/components/ConfirmPopup";
-
-interface BackendService {
-    id: number;
-    tenDichVu: string; // Tên dịch vụ
-    moTa?: string; // Mô tả
-    gia: number; // Giá
-    loaiDichVu?: string; // Loại dịch vụ
-    trangThai?: string; // Trạng thái
-}
 
 interface Service {
-    id: number;
+    serviceId: number;
     name: string;
-    description: string;
-    price: number;
-    unit: string; // loaiDichVu
-    status: string; // trangThai
+    type: string;
+    status: string;
+}
+
+interface BackendService {
+    serviceId: number;
+    name: string;
+    serviceType: "ONCE" | "HOURLY" | "DAILY" | "CONSUMABLE" | string;
+    serviceStatus: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK" | string;
 }
 
 function mapService(s: BackendService): Service {
+    const typeMap: Record<string, string> = {
+        ONCE: "Tính theo lần",
+        HOURLY: "Tính theo giờ",
+        DAILY: "Tính theo ngày",
+        CONSUMABLE: "Tiêu hao",
+    };
+
+    const statusMap: Record<string, string> = {
+        ACTIVE: "Đang hoạt động",
+        INACTIVE: "Ngừng hoạt động",
+        OUT_OF_STOCK: "Tạm thời hết",
+    };
+
     return {
-        id: s.id,
-        name: s.tenDichVu,
-        description: s.moTa ?? "",
-        price: s.gia,
-        unit: s.loaiDichVu ?? "Lần",
-        status: s.trangThai ?? "Đang hoạt động",
+        serviceId: s.serviceId,
+        name: s.name,
+        type: typeMap[s.serviceType] ?? s.serviceType,
+        status: statusMap[s.serviceStatus] ?? s.serviceStatus,
     };
 }
 
-export default function ServicesPage() {
+export default function ServicePage() {
     const [services, setServices] = useState<Service[]>([]);
-    const [filteredServices, setFilteredServices] = useState<Service[]>([]);
-    const [search, setSearch] = useState("");
-    const [unitFilter, setUnitFilter] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
-    const [sortField, setSortField] = useState<"id" | "price" | "name" | null>(null);
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [filtered, setFiltered] = useState<Service[]>([]);
+    const [filters, setFilters] = useState({ name: "", type: "", status: "" });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-    const [totalPages, setTotalPages] = useState(1);
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [serviceToDelete, setServiceToDelete] = useState<{ id: number; displayName: string } | null>(null);
-
-    const loadServices = async (page = currentPage, size = itemsPerPage) => {
-        try {
-            // Backend của bạn dùng query param 'page' và 'size'
-            const res = await fetch(`/api/services?page=${page - 1}&size=${size}`, { cache: "no-store" });
-            if (!res.ok) throw new Error("Failed to fetch services");
-
-            const data: { content: BackendService[], totalPages: number } = await res.json();
-
-            const mapped = data.content.map(mapService);
-            setServices(mapped);
-            setFilteredServices(mapped);
-            setTotalPages(data.totalPages);
-
-        } catch (e) {
-            console.error(e);
-            toast.error("Không thể tải danh sách dịch vụ.");
-        }
-    };
 
     useEffect(() => {
-        loadServices(1, itemsPerPage);
-    }, []);
+        const load = async () => {
+            const params = new URLSearchParams();
+            if (filters.name.trim()) params.set("name", filters.name);
+            if (filters.type.trim()) params.set("type", filters.type);
+            if (filters.status.trim()) params.set("status", filters.status);
 
-    // Tìm kiếm và Lọc
-    const handleSearch = async () => {
-        try {
-            const keyword = search.trim();
-            const apiUrl = `/api/services/search?keyword=${keyword}&page=0&size=${itemsPerPage}`;
+            const url = `/api/service/api/list${params.toString() ? `?${params}` : ""}`;
+            const res = await fetch(url, { cache: "no-store" });
 
-            const res = await fetch(apiUrl, { cache: "no-store" });
-            if (!res.ok) throw new Error("Search failed");
-
-            const data: { content: BackendService[], totalPages: number } = await res.json();
-            let mapped = data.content.map(mapService);
-
-            if (statusFilter) {
-                mapped = mapped.filter(s => s.status === statusFilter);
-            }
-            if (unitFilter) {
-                mapped = mapped.filter(s => s.unit === unitFilter);
+            if (!res.ok) {
+                setServices([]);
+                setFiltered([]);
+                return;
             }
 
-            setFilteredServices(mapped);
-            setTotalPages(data.totalPages);
+            const data: BackendService[] = await res.json();
+            const mapped = data.map(mapService);
+
+            setServices(mapped);
+            setFiltered(mapped);
             setCurrentPage(1);
+        };
 
-        } catch (e) {
-            console.error(e);
-            toast.error("Tìm kiếm dịch vụ thất bại.");
-        }
-    };
+        load().catch(() => {});
+    }, [filters.name, filters.type, filters.status]);
 
-    const clearFilters = () => {
-        setSearch("");
-        setUnitFilter("");
-        setStatusFilter("");
-        loadServices(1, itemsPerPage);
-        setCurrentPage(1);
-    };
+    const clearFilters = () => setFilters({ name: "", type: "", status: "" });
 
-    const handleSort = (field: "id" | "price" | "name") => {
-        let newOrder: "asc" | "desc" = "asc";
-        if (sortField === field && sortOrder === "asc") newOrder = "desc";
-        setSortField(field);
-        setSortOrder(newOrder);
-
-        const sorted = [...filteredServices].sort((a, b) => {
-            let cmp = 0;
-            if (field === "name") {
-                cmp = a.name.localeCompare(b.name);
-            } else {
-                const aValue = a[field] as number;
-                const bValue = b[field] as number;
-                cmp = aValue - bValue;
-            }
-            return newOrder === "asc" ? cmp : -cmp;
-        });
-        setFilteredServices(sorted);
-    };
-
-    // Phân trang
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-        loadServices(page, itemsPerPage);
-    }
-
-    const handleDelete = (id: number, displayName: string) => {
-        setServiceToDelete({ id, displayName });
-        setIsPopupOpen(true);
-    };
-
-    const confirmDelete = async () => {
-        if (!serviceToDelete) return;
-
-        const { id, displayName } = serviceToDelete;
-
-        const res = await fetch(`/api/services/${id}`, { method: "DELETE" });
-        if (!res.ok) {
-            toast.error("Xóa dịch vụ thất bại");
-            setIsPopupOpen(false);
-            setServiceToDelete(null);
-            return;
-        }
-
-        await loadServices(currentPage, itemsPerPage);
-
-        toast.success(`Đã xóa dịch vụ ${displayName} thành công!`);
-        setIsPopupOpen(false);
-        setServiceToDelete(null);
-    };
+    const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+    const shown = useMemo(
+        () => filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+        [filtered, currentPage]
+    );
 
     return (
         <main className={styles.main}>
-            {/* Banner header */}
+            {/* HEADER */}
             <section className={styles.pageHeader}>
                 <div className={styles.pageHeaderContent}>
                     <div>
                         <h1 className={styles.pageTitle}>Quản lý dịch vụ</h1>
-                        <p className={styles.pageSubtitle}>Quản lý các dịch vụ khách sạn cung cấp</p>
+                        <p className={styles.pageSubtitle}>Quản lý dịch vụ cung cấp trong khách sạn</p>
                     </div>
                 </div>
             </section>
 
-            {/* Filters */}
+            {/* FILTER */}
             <div className={styles.filters}>
                 <div className={styles.filterLeft}>
                     <div className={styles.filterGroup}>
-                        <label className={styles.filterLabel}>Tìm kiếm dịch vụ</label>
+                        <label className={styles.filterLabel}>Tên dịch vụ</label>
                         <input
+                            className={styles.input}
                             type="text"
-                            placeholder="Nhập tên hoặc loại dịch vụ..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className={styles.search}
+                            placeholder="Nhập tên dịch vụ..."
+                            value={filters.name}
+                            onChange={(e) => setFilters({ ...filters, name: e.target.value })}
                         />
                     </div>
 
                     <div className={styles.filterGroup}>
-                        <label className={styles.filterLabel}>Loại/Đơn vị</label>
-                        <input
-                            type="text"
-                            placeholder="Nhập loại/đơn vị..."
-                            value={unitFilter}
-                            onChange={(e) => setUnitFilter(e.target.value)}
-                            className={styles.input}
-                        />
+                        <label className={styles.filterLabel}>Loại dịch vụ</label>
+                        <select
+                            className={styles.select}
+                            value={filters.type}
+                            onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                        >
+                            <option value="">Tất cả</option>
+                            <option value="ONCE">Tính theo lần</option>
+                            <option value="HOURLY">Tính theo giờ</option>
+                            <option value="DAILY">Tính theo ngày</option>
+                            <option value="CONSUMABLE">Tiêu hao</option>
+                        </select>
                     </div>
 
                     <div className={styles.filterGroup}>
                         <label className={styles.filterLabel}>Trạng thái</label>
                         <select
                             className={styles.select}
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
+                            value={filters.status}
+                            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                         >
                             <option value="">Tất cả</option>
-                            <option value="Đang hoạt động">Đang hoạt động</option>
-                            <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                            <option value="ACTIVE">Đang hoạt động</option>
+                            <option value="INACTIVE">Ngừng hoạt động</option>
+                            <option value="OUT_OF_STOCK">Tạm thời hết</option>
                         </select>
                     </div>
 
                     <div className={styles.filterActions}>
-                        <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSearch}>Tìm kiếm</button>
-                        <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>Xóa bộ lọc</button>
+                        <button className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>
+                            Xóa bộ lọc
+                        </button>
                     </div>
                 </div>
+
                 <div className={styles.filterRight}>
                     <Link href="/service/add" className={styles.addLink}>
-                        +Thêm dịch vụ mới
+                        + Thêm dịch vụ mới
                     </Link>
                 </div>
             </div>
 
-            {/* Info line */}
+            {/* STATS */}
             <div className={styles.listInfo}>
                 <span className={styles.infoDot}>i</span>
-                <span>Hiển thị {filteredServices.length} dịch vụ (Trang {currentPage}/{Math.max(totalPages, 1)})</span>
+                <span>
+          Hiển thị {shown.length}/{services.length} dịch vụ (Trang {currentPage}/{totalPages})
+        </span>
             </div>
 
-            {/* Table */}
+            {/* TABLE */}
             <div className={styles.tableWrap}>
                 <table className={styles.table}>
                     <thead className={styles.thead}>
                     <tr>
-                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("id")}>
-                            Mã DV
-                            <span className={styles.sortIcon}>{sortField === "id" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}</span>
-                        </th>
-                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("name")}>
-                            Tên dịch vụ
-                            <span className={styles.sortIcon}>{sortField === "name" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}</span>
-                        </th>
-                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("price")}>
-                            Giá
-                            <span className={styles.sortIcon}>{sortField === "price" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}</span>
-                        </th>
-                        <th className={styles.th}>Đơn vị tính</th>
-                        <th className={styles.th}>Mô tả</th>
+                        <th className={styles.th}>Mã DV</th>
+                        <th className={styles.th}>Tên dịch vụ</th>
+                        <th className={styles.th}>Loại dịch vụ</th>
                         <th className={styles.th}>Trạng thái</th>
                         <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
                     </tr>
                     </thead>
-
                     <tbody>
-                    {filteredServices.length === 0 ? (
+                    {shown.length === 0 ? (
                         <tr>
-                            <td colSpan={7} className={`${styles.td} ${styles.center}`}>
-                                Không tìm thấy dịch vụ nào phù hợp...
+                            <td colSpan={5} className={`${styles.td} ${styles.center}`}>
+                                Không có dịch vụ phù hợp...
                             </td>
                         </tr>
                     ) : (
-                        filteredServices.map((s) => (
-                            <tr key={s.id} className={styles.tr}>
-                                <td className={styles.td} style={{ fontWeight: 600 }}>{s.id}</td>
+                        shown.map((s) => (
+                            <tr key={s.serviceId}>
+                                <td className={styles.td}>{String(s.serviceId).padStart(3, "0")}</td>
                                 <td className={styles.td}>{s.name}</td>
-                                <td className={styles.td}>
-                                    {s.price.toLocaleString()} VND / {s.unit}
-                                </td>
-                                <td className={styles.td}>{s.unit}</td>
-                                <td className={styles.td} style={{ color: "#374151" }}>
-                                    {s.description.length > 50 ? s.description.substring(0, 50) + "..." : s.description || "-"}
-                                </td>
-                                <td className={`${styles.td} ${
-                                    s.status === "Đang hoạt động"
-                                        ? styles.statusAvailable 
-                                        : styles.statusReserved 
-                                }`}>
-                                    {s.status}
-                                </td>
+                                <td className={styles.td}>{s.type}</td>
+                                <td className={styles.td}>{s.status}</td>
                                 <td className={`${styles.td} ${styles.center}`}>
-                                    <Link href={`/service/edit/${s.id}`} className={styles.btnUpdate}>
+                                    <Link href={`/service/edit/${s.serviceId}`} className={styles.updateBtn}>
                                         Cập nhật
                                     </Link>
-                                    <button onClick={() => handleDelete(s.id, s.name)} className={styles.btnDelete}>
-                                        Xóa
-                                    </button>
+                                    <button className={styles.deleteBtn}>Xóa</button>
                                 </td>
                             </tr>
                         ))
@@ -294,32 +198,22 @@ export default function ServicesPage() {
                 </table>
             </div>
 
-            {/* Pagination */}
+            {/* PAGINATION */}
             {totalPages > 1 && (
                 <div className={styles.pagination}>
-                    <div className={styles.pagerGroup}>
-                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(1)}>&laquo;</button>
-                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(Math.max(1, currentPage - 1))}>&lsaquo;</button>
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => handlePageChange(i + 1)}
-                                className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}>&rsaquo;</button>
-                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(totalPages)}>&raquo;</button>
-                    </div>
+                    {Array.from({ length: totalPages }).map((_, i) => (
+                        <button
+                            key={i}
+                            className={`${styles.pageButton} ${
+                                currentPage === i + 1 ? styles.pageButtonActive : ""
+                            }`}
+                            onClick={() => setCurrentPage(i + 1)}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
                 </div>
             )}
-            <ConfirmPopup
-                isOpen={isPopupOpen}
-                onClose={() => setIsPopupOpen(false)}
-                onConfirm={confirmDelete}
-                title={serviceToDelete ? `Bạn có chắc muốn xóa dịch vụ ${serviceToDelete.displayName}?` : ""}
-            />
         </main>
     );
 }
