@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addEmployee, NewEmployee, EmployeeRole, EmployeeShift, EmployeeStatus } from "@/utils/api";
+import { toast } from "react-toastify";
 
 export default function AddEmployee() {
     const router = useRouter();
@@ -52,43 +53,42 @@ export default function AddEmployee() {
 
         // Validation
         if (!formData.name.trim()) {
-            alert('Vui lòng nhập họ tên');
+            toast.error('Vui lòng nhập họ tên');
             return;
         }
         if (!formData.position) {
-            alert('Vui lòng chọn chức vụ');
+            toast.error('Vui lòng chọn chức vụ');
             return;
         }
         if (!phoneInput || phoneInput.length !== 10) {
-            alert('Số điện thoại phải có đúng 10 số');
+            toast.error('Số điện thoại phải có đúng 10 số');
             return;
         }
         if (!phoneInput.startsWith('0')) {
-            alert('Số điện thoại phải bắt đầu bằng số 0');
+            toast.error('Số điện thoại phải bắt đầu bằng số 0');
             return;
         }
         if (!formData.email.trim()) {
-            alert('Vui lòng nhập email');
+            toast.error('Vui lòng nhập email');
             return;
         }
         if (!formData.email.endsWith('@gmail.com')) {
-            alert('Email phải có đuôi @gmail.com');
+            toast.error('Email phải có đuôi @gmail.com');
             return;
         }
         if (!formData.shift) {
-            alert('Vui lòng chọn ca làm việc');
+            toast.error('Vui lòng chọn ca làm việc');
             return;
         }
 
         try {
-            console.log('Sending employee data:', formData);
-            console.log('JSON payload:', JSON.stringify(formData, null, 2));
-            await addEmployee(formData);
-            alert('Thêm nhân viên thành công!');
+            const result = await addEmployee(formData);
+            toast.success('Thêm nhân viên thành công!');
             router.push('/employee');
         } catch (error) {
             console.error("Lỗi khi thêm nhân viên:", error);
-            alert('Lỗi: Không thể thêm nhân viên. Vui lòng kiểm tra kết nối API.');
+            const errorMessage = error instanceof Error ? error.message : 'Không thể thêm nhân viên. Vui lòng thử lại sau.';
+            toast.error(errorMessage);
         }
     };
 
