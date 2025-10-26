@@ -108,7 +108,7 @@ export default function AddCustomerPage() {
 
     setSaving(true);
     try {
-      const res = await fetch("/api/customers/api/add", {
+      const res = await fetch("/api/customer/api/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

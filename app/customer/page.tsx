@@ -68,7 +68,7 @@ export default function CustomerListPage() {
   // load dữ liệu từ BE thông qua rewrite proxy Next.js (xem next.config.ts)
   useEffect(() => {
     const load = async () => {
-      const res = await fetch("/api/customers/api/list", { cache: "no-store" });
+      const res = await fetch("/api/customer/api/list", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch customers");
       const data: BackendCustomer[] = await res.json();
       const mapped = data.map(mapCustomer);
@@ -135,7 +135,7 @@ export default function CustomerListPage() {
   const confirmDelete = async () => {
     if (!toDelete) return;
     const { id, name } = toDelete;
-    const res = await fetch(`/api/customers/api/delete/${id}`, { method: "POST" });
+    const res = await fetch(`/api/customer/api/delete/${id}`, { method: "POST" });
     if (!res.ok) {
       toast.error("Xóa khách hàng thất bại");
       setIsPopupOpen(false);
@@ -143,7 +143,7 @@ export default function CustomerListPage() {
       return;
     }
     // reload
-    const reload = await fetch("/api/customers/api/list", { cache: "no-store" });
+    const reload = await fetch("/api/customer/api/list", { cache: "no-store" });
     if (reload.ok) {
       const data: BackendCustomer[] = await reload.json();
       const mapped = data.map(mapCustomer);

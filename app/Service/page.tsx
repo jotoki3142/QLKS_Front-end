@@ -1,158 +1,219 @@
+"use client";
 
-'use client';
-import React, { useState, useEffect, useCallback } from 'react';
-import styles from './page.module.css';
-import Link from 'next/link';
-import { getServices, deleteService, Service, PagedResponse } from '@/utils/api';
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import styles from "./page.module.css";
 
-const ServiceManagementPage = () => {
-    const [servicesData, setServicesData] = useState<PagedResponse<Service> | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(0);
-    const pageSize = 10;
+interface Service {
+    serviceId: number;
+    name: string;
+    type: string;
+    status: string;
+}
 
-    const [keyword, setKeyword] = useState('');
-    const [searchKeyword, setSearchKeyword] = useState('');
+interface BackendService {
+    serviceId: number;
+    name: string;
+    serviceType: "ONCE" | "HOURLY" | "DAILY" | "CONSUMABLE" | string;
+    serviceStatus: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK" | string;
+}
 
-    const fetchServices = useCallback(async (page: number, currentKeyword: string) => {
-        setLoading(true);
-        try {
-            const data = await getServices(page, pageSize, currentKeyword);
-            setServicesData(data);
-            setCurrentPage(page);
-        } catch (error) {
-            console.error("Lỗi khi fetch dịch vụ:", error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+function mapService(s: BackendService): Service {
+    const typeMap: Record<string, string> = {
+        ONCE: "Tính theo lần",
+        HOURLY: "Tính theo giờ",
+        DAILY: "Tính theo ngày",
+        CONSUMABLE: "Tiêu hao",
+    };
+
+    const statusMap: Record<string, string> = {
+        ACTIVE: "Đang hoạt động",
+        INACTIVE: "Ngừng hoạt động",
+        OUT_OF_STOCK: "Tạm thời hết",
+    };
+
+    return {
+        serviceId: s.serviceId,
+        name: s.name,
+        type: typeMap[s.serviceType] ?? s.serviceType,
+        status: statusMap[s.serviceStatus] ?? s.serviceStatus,
+    };
+}
+
+export default function ServicePage() {
+    const [services, setServices] = useState<Service[]>([]);
+    const [filtered, setFiltered] = useState<Service[]>([]);
+    const [filters, setFilters] = useState({ name: "", type: "", status: "" });
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
-        fetchServices(0, searchKeyword);
-    }, [fetchServices, searchKeyword]);
+        const load = async () => {
+            const params = new URLSearchParams();
+            if (filters.name.trim()) params.set("name", filters.name);
+            if (filters.type.trim()) params.set("type", filters.type);
+            if (filters.status.trim()) params.set("status", filters.status);
 
-    const handleSearch = () => {
-        setSearchKeyword(keyword);
-    };
+            const url = `/api/service/api/list${params.toString() ? `?${params}` : ""}`;
+            const res = await fetch(url, { cache: "no-store" });
 
-    const handlePageChange = (page: number) => {
-        if (servicesData && page >= 0 && page < servicesData.totalPages) {
-            fetchServices(page, searchKeyword);
-        }
-    };
-
-    const handleDelete = async (id: number) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa dịch vụ này không?')) {
-            try {
-                await deleteService(id);
-                alert('Xóa dịch vụ thành công!');
-                fetchServices(currentPage, searchKeyword);
-            } catch (error) {
-                console.error("Lỗi khi xóa dịch vụ:", error);
-                alert('Lỗi: Không thể xóa dịch vụ.');
+            if (!res.ok) {
+                setServices([]);
+                setFiltered([]);
+                return;
             }
-        }
-    };
 
-    if (loading && !servicesData) return <div className={styles.container}>Đang tải dịch vụ...</div>;
+            const data: BackendService[] = await res.json();
+            const mapped = data.map(mapService);
 
-    const services = servicesData?.content || [];
-    const pageNumber = servicesData?.number ?? 0;
-    const totalPages = servicesData?.totalPages ?? 1;
-    const totalElements = servicesData?.totalElements ?? 0;
+            setServices(mapped);
+            setFiltered(mapped);
+            setCurrentPage(1);
+        };
+
+        load().catch(() => {});
+    }, [filters.name, filters.type, filters.status]);
+
+    const clearFilters = () => setFilters({ name: "", type: "", status: "" });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+    const shown = useMemo(
+        () => filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+        [filtered, currentPage]
+    );
 
     return (
-        <div className={styles.container}>
+        <main className={styles.main}>
+            {/* HEADER */}
+            <section className={styles.pageHeader}>
+                <div className={styles.pageHeaderContent}>
+                    <div>
+                        <h1 className={styles.pageTitle}>Quản lý dịch vụ</h1>
+                        <p className={styles.pageSubtitle}>Quản lý dịch vụ cung cấp trong khách sạn</p>
+                    </div>
+                </div>
+            </section>
 
-            <div className={styles.titleSection}>
-                <h2>Quản lý dịch vụ</h2>
-                <p>Quản lý dịch vụ trong khách sạn</p>
+            {/* FILTER */}
+            <div className={styles.filters}>
+                <div className={styles.filterLeft}>
+                    <div className={styles.filterGroup}>
+                        <label className={styles.filterLabel}>Tên dịch vụ</label>
+                        <input
+                            className={styles.input}
+                            type="text"
+                            placeholder="Nhập tên dịch vụ..."
+                            value={filters.name}
+                            onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+                        />
+                    </div>
+
+                    <div className={styles.filterGroup}>
+                        <label className={styles.filterLabel}>Loại dịch vụ</label>
+                        <select
+                            className={styles.select}
+                            value={filters.type}
+                            onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                        >
+                            <option value="">Tất cả</option>
+                            <option value="ONCE">Tính theo lần</option>
+                            <option value="HOURLY">Tính theo giờ</option>
+                            <option value="DAILY">Tính theo ngày</option>
+                            <option value="CONSUMABLE">Tiêu hao</option>
+                        </select>
+                    </div>
+
+                    <div className={styles.filterGroup}>
+                        <label className={styles.filterLabel}>Trạng thái</label>
+                        <select
+                            className={styles.select}
+                            value={filters.status}
+                            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                        >
+                            <option value="">Tất cả</option>
+                            <option value="ACTIVE">Đang hoạt động</option>
+                            <option value="INACTIVE">Ngừng hoạt động</option>
+                            <option value="OUT_OF_STOCK">Tạm thời hết</option>
+                        </select>
+                    </div>
+
+                    <div className={styles.filterActions}>
+                        <button className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>
+                            Xóa bộ lọc
+                        </button>
+                    </div>
+                </div>
+
+                <div className={styles.filterRight}>
+                    <Link href="/service/add" className={styles.addLink}>
+                        + Thêm dịch vụ mới
+                    </Link>
+                </div>
             </div>
 
-            {/* Thanh tìm kiếm và bộ lọc */}
-            <div className={styles.filterSection}>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="search">🔍 Tìm kiếm dịch vụ</label>
-                    <input
-                        id="search"
-                        placeholder="Nhập tên dịch vụ..."
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                    />
-                </div>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="type"> Loại dịch vụ</label>
-                    <select id="type"><option>Tất cả loại</option></select>
-                </div>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="status"> Trạng thái</label>
-                    <select id="status"><option>Tất cả</option></select>
-                </div>
-                <button className={styles.searchButton} onClick={handleSearch}>Tìm kiếm</button>
-                <button className={styles.clearButton} onClick={() => {setKeyword(''); setSearchKeyword('');}}>🗑️ Xóa bộ lọc</button>
+            {/* STATS */}
+            <div className={styles.listInfo}>
+                <span className={styles.infoDot}>i</span>
+                <span>
+          Hiển thị {shown.length}/{services.length} dịch vụ (Trang {currentPage}/{totalPages})
+        </span>
             </div>
 
-            <hr className={styles.divider} />
-
-            <div className={styles.tableHeader}>
-                <span>⚠️ Hiển thị {services.length}/{totalElements} dịch vụ (Trang {pageNumber + 1}/{totalPages})</span>
-                <Link href="/service/add" className={styles.addButton}>
-                    + Thêm dịch vụ mới
-                </Link>
-            </div>
-
-            <table className={styles.dataTable}>
-                <thead>
-                <tr>
-                    <th>Mã DV</th>
-                    <th>Tên dịch vụ</th>
-                    <th>Mô tả</th>
-                    <th>Giá</th>
-                    <th>Loại dịch vụ</th>
-                    <th>Trạng thái</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody>
-                {services.map((service) => (
-                    <tr key={service.id}>
-                        <td>{service.id}</td>
-                        <td>{service.tenDichVu}</td>
-                        <td>{service.moTa}</td>
-                        <td>{service.gia.toLocaleString('vi-VN')} VND</td>
-                        <td>{service.loaiDichVu}</td>
-                        <td>{service.trangThai}</td>
-                        <td>
-                            <Link href={`/service/edit/${service.id}`} className={styles.actionButton}>
-                                Cập nhật
-                            </Link>
-                            <button className={styles.deleteButton} onClick={() => handleDelete(service.id)}>
-                                Xóa
-                            </button>
-                        </td>
+            {/* TABLE */}
+            <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                    <thead className={styles.thead}>
+                    <tr>
+                        <th className={styles.th}>Mã DV</th>
+                        <th className={styles.th}>Tên dịch vụ</th>
+                        <th className={styles.th}>Loại dịch vụ</th>
+                        <th className={styles.th}>Trạng thái</th>
+                        <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
-
-            {/* Phân trang */}
-            <div className={styles.pagination}>
-                <span onClick={() => handlePageChange(0)} className={pageNumber === 0 ? styles.disabled : ''}>&lt;&lt;</span>
-                <span onClick={() => handlePageChange(pageNumber - 1)} className={pageNumber === 0 ? styles.disabled : ''}>&lt;</span>
-                {[...Array(totalPages)].map((_, i) => (
-                    <span
-                        key={i}
-                        className={i === pageNumber ? styles.activePage : ''}
-                        onClick={() => handlePageChange(i)}
-                    >
-                    {i + 1}
-                </span>
-                ))}
-                <span onClick={() => handlePageChange(pageNumber + 1)} className={pageNumber === totalPages - 1 ? styles.disabled : ''}>&gt;</span>
-                <span onClick={() => handlePageChange(totalPages - 1)} className={pageNumber === totalPages - 1 ? styles.disabled : ''}>&gt;&gt;</span>
+                    </thead>
+                    <tbody>
+                    {shown.length === 0 ? (
+                        <tr>
+                            <td colSpan={5} className={`${styles.td} ${styles.center}`}>
+                                Không có dịch vụ phù hợp...
+                            </td>
+                        </tr>
+                    ) : (
+                        shown.map((s) => (
+                            <tr key={s.serviceId}>
+                                <td className={styles.td}>{String(s.serviceId).padStart(3, "0")}</td>
+                                <td className={styles.td}>{s.name}</td>
+                                <td className={styles.td}>{s.type}</td>
+                                <td className={styles.td}>{s.status}</td>
+                                <td className={`${styles.td} ${styles.center}`}>
+                                    <Link href={`/service/edit/${s.serviceId}`} className={styles.updateBtn}>
+                                        Cập nhật
+                                    </Link>
+                                    <button className={styles.deleteBtn}>Xóa</button>
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                    </tbody>
+                </table>
             </div>
-        </div>
-    );
-};
 
-export default ServiceManagementPage;
+            {/* PAGINATION */}
+            {totalPages > 1 && (
+                <div className={styles.pagination}>
+                    {Array.from({ length: totalPages }).map((_, i) => (
+                        <button
+                            key={i}
+                            className={`${styles.pageButton} ${
+                                currentPage === i + 1 ? styles.pageButtonActive : ""
+                            }`}
+                            onClick={() => setCurrentPage(i + 1)}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </main>
+    );
+}

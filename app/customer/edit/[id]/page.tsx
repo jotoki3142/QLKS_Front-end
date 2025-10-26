@@ -47,7 +47,7 @@ export default function EditCustomerPage() {
       try {
         // Load customer details and nationalities in parallel
         const [customerRes, nationalitiesRes] = await Promise.all([
-          fetch(`/api/customers/api/detail/${id}`, { cache: "no-store" }),
+          fetch(`/api/customer/api/detail/${id}`, { cache: "no-store" }),
           fetch("/api/nationalities", { cache: "no-store" })
         ]);
 
@@ -141,7 +141,7 @@ export default function EditCustomerPage() {
 
     setSaving(true);
     try {
-      const res = await fetch(`/api/customers/api/update/${id}`, {
+      const res = await fetch(`/api/customer/api/update/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

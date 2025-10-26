@@ -135,9 +135,15 @@ export const addEmployee = (newEmployee: NewEmployee): Promise<Employee> => {
         position: newEmployee.position || undefined,
         shift: newEmployee.shift || undefined,
     };
+<<<<<<< HEAD
     
     console.log('Cleaned employee data:', cleanedData);
     
+=======
+
+    console.log('Cleaned employee data:', cleanedData);
+
+>>>>>>> dev
     return apiFetch(`${API_BASE_URL}/employee/api/add`, {
         method: 'POST',
         body: JSON.stringify(cleanedData),
