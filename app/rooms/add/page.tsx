@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import styles from "./page.module.css";
 import { toast } from "react-toastify";
@@ -121,7 +122,12 @@ export default function AddRoomPage() {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <h1 className={styles.title}>Thêm phòng mới</h1>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Thêm phòng mới</h1>
+          <Link href="/rooms" className={styles.backButton}>
+            ← Quay lại
+          </Link>
+        </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Số phòng  */}

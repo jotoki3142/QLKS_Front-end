@@ -63,17 +63,20 @@
 .sortIcon { font-size: 0.9rem; margin-left: 0.25rem; }
 .tr:hover { background: #fafafa; transition: background-color 200ms ease; }
 
-.roomImage { width: 5.2rem; height: 4rem; object-fit: cover; border-radius: 0.375rem; border: 1px solid #e5e7eb; }
 .center { text-align: center; }
 
-.statusAvailable { color: #16a34a; font-weight: 600; }
-.statusOccupied { color: #dc2626; font-weight: 600; }
-.statusReserved { color: #2563eb; /* blue-600 */ font-weight: 600; }
+/* Bill Status Colors */
+.statusPaid { color: #16a34a; font-weight: 600; }
+.statusUnpaid { color: #dc2626; font-weight: 600; }
+.statusCancelled { color: #6b7280; font-weight: 600; }
 
-/* Price cell */
+/* Price cells */
 .priceBox { display: inline-flex; align-items: baseline; gap: 0.25rem; }
-.priceValue { font-weight: 700; color: #111827; }
-.priceNight { color: #6b7280; font-size: 0.9rem; }
+.priceValue { font-weight: 600; color: #374151; }
+
+/* Total cell - highlight */
+.totalBox { display: inline-flex; align-items: baseline; gap: 0.25rem; }
+.totalValue { font-weight: 700; color: #111827; font-size: 1.1rem; }
 
 /* Actions */
 .btnUpdate, .btnDelete { display: inline-block; padding: 0.45rem 0.8rem; border-radius: 9999px; text-decoration: none; font-weight: 600; border: 1px solid transparent; margin: 0 0.25rem; }
