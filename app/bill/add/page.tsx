@@ -108,13 +108,20 @@ export default function AddBillPage() {
 
   return (
     <main className={styles.main}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Thêm hóa đơn mới</h1>
-          <Link href="/bill" className={styles.backButton}>
-            ← Quay lại
-          </Link>
+      <section className={styles.pageHeader}>
+        <div className={styles.pageHeaderContent}>
+          <div className={styles.headerLeft}>
+            <span className={styles.plus}>+</span>
+            <div>
+              <h1 className={styles.headerTitle}>Thêm hóa đơn mới</h1>
+              <p className={styles.headerSubtitle}>Tạo thông tin hóa đơn mới</p>
+            </div>
+          </div>
+          <Link href="/bill" className={styles.backBtn}>← Quay lại</Link>
         </div>
+      </section>
+
+      <div className={styles.container}>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Mã booking */}

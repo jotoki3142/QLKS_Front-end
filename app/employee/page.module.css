@@ -5,7 +5,7 @@
 }
 
 .header {
-  background-color: #425383;
+  background-color: #4a7ba8;
   color: white;
   padding: 20px;
   border-radius: 10px 10px 0 0;
@@ -70,7 +70,7 @@
 }
 
 .table th {
-  background-color: #0f172a;
+  background-color: #4a7ba8;
   color: white;
   padding: 10px;
 }
@@ -128,7 +128,7 @@
 /* Header banner */
 .pageHeader {
   margin: 0 -1.5rem 1rem -1.5rem;
-  background: #5b8094; /* bluish like screenshot */
+  background: #4a7ba8;
   color: #fff;
 }
 .pageHeaderContent {
@@ -155,7 +155,7 @@
 .filterLeft {
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr 220px 1fr auto;
+  grid-template-columns: 260px 220px 260px auto;
   gap: 1rem;
   align-items: end;
 }
@@ -165,10 +165,10 @@
 .input:focus, .select:focus { outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.28); }
 .filterActions { display: flex; gap: 0.5rem; }
 .btn { border: 1px solid #d1d5db; background: #fff; color: #111827; padding: 0.55rem 0.9rem; border-radius: 9999px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-.btnPrimary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.btnPrimary { background: #2563eb; color: #fff; border-color: #2563eb; }
 .btnGhost { background: #fff; border-color: #9ca3af; color: #374151; }
-.addLink { background: #3b82f6; color: #fff; padding: 0.45rem 0.75rem; border-radius: 9999px; text-decoration: none; font-weight: 600; }
-.addLink:hover { background: #2563eb; }
+.addLink { background: #2563eb; color: #fff; padding: 0.45rem 0.75rem; border-radius: 9999px; text-decoration: none; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; }
+.addLink:hover { background: #1d4ed8; }
 
 /* Info line */
 .listInfo { display: flex; align-items: center; gap: 0.5rem; color: #374151; margin: 0.5rem 0 0.75rem; font-size: 0.95rem; }
@@ -177,11 +177,13 @@
 /* Table */
 .tableWrap { overflow-x: auto; background: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; }
 .table { min-width: 100%; border-collapse: collapse; font-size: 1rem; }
-.thead { background: #5b8094; color: #fff; }
+.thead { background: #4a7ba8; color: #fff; }
 .th, .td { padding: 0.75rem 0.875rem; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: middle; }
 /* Force header cells to use the same color as primary buttons/banner */
-.table th { background: #5b8094; color: #fff; }
+.table th { background: #4a7ba8; color: #fff; }
 .center { text-align: center; }
+.clickable { cursor: pointer; user-select: none; }
+.sortIcon { margin-left: 6px; font-size: .9rem; }
 
 /* Action buttons */
 .updateBtn, .deleteBtn { display: inline-block; padding: 0.35rem 0.6rem; border-radius: 9999px; text-decoration: none; font-weight: 600; border: 1px solid transparent; margin: 0 0.25rem; }
