@@ -2,6 +2,7 @@
 
 import styles from "./page.module.css";
 import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getEmployees, Employee as ApiEmployee, deleteEmployee } from "@/utils/api";
 import { toast } from "react-toastify";
@@ -11,6 +12,7 @@ import ConfirmPopup from "@/components/ConfirmPopup";
 type Employee = ApiEmployee;
 
 export default function EmployeePage() {
+    const router = useRouter();
     const [filters, setFilters] = useState({ name: "", position: "", email: "" });
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
@@ -20,10 +22,17 @@ export default function EmployeePage() {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [employeeToDelete, setEmployeeToDelete] = useState<{ employeeId: number; name: string } | null>(null);
 
-    // Fetch employees from API
+    // Check for success message from edit page and fetch employees
     useEffect(() => {
+        // Check for success message from edit page
+        const successMessage = sessionStorage.getItem('employeeUpdateSuccess');
+        if (successMessage) {
+            toast.success(successMessage);
+            sessionStorage.removeItem('employeeUpdateSuccess');
+        }
+        
         loadEmployees();
-    }, []);
+    }, [router]);
 
     const loadEmployees = async () => {
         try {
