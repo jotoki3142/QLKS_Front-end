@@ -14,10 +14,10 @@ export default function EmployeePage() {
   };
 
   // Demo paging numbers for the UI
-  const total = 50;
+  const total = 0;
   const pageSize = 10;
-  const currentPage = 1;
-  const shown = 10;
+  const currentPage = 0;
+  const shown = 0;
 
   return (
     <main className={styles.main}>
@@ -109,36 +109,11 @@ export default function EmployeePage() {
           </thead>
           <tbody>
             {/* Demo row to match screenshot */}
-            <tr>
-              <td className={styles.td}>001</td>
-              <td className={styles.td}>Nhung Vũ</td>
-              <td className={styles.td}>Bảo vệ</td>
-              <td className={styles.td}>0123456789</td>
-              <td className={styles.td}><a href="#">nvu@gmail.com</a></td>
-              <td className={styles.td}>Sáng</td>
-              <td className={styles.td}>1000</td>
-              <td className={styles.td} style={{ color: "#dc2626", fontWeight: 600 }}>Nghỉ</td>
-              <td className={`${styles.td} ${styles.center}`}>
-                <Link href="/employee/edit/001" className={styles.updateBtn}>Cập nhật</Link>
-                <button className={styles.deleteBtn}>Xóa</button>
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className={styles.pagination}>
-        <div className={styles.pagerGroup}>
-          <button className={`${styles.pageButton} ${styles.pageArrow}`}>&laquo;</button>
-          <button className={`${styles.pageButton} ${styles.pageArrow}`}>&lsaquo;</button>
-          {[1,2,3,4,5].map((p) => (
-            <button key={p} className={`${styles.pageButton} ${p === 3 ? styles.pageButtonActive : ""}`}>{p}</button>
-          ))}
-          <button className={`${styles.pageButton} ${styles.pageArrow}`}>&rsaquo;</button>
-          <button className={`${styles.pageButton} ${styles.pageArrow}`}>&raquo;</button>
-        </div>
-      </div>
+      
     </main>
   );
 }
