@@ -1,158 +1,325 @@
+// app/service/page.tsx
+"use client";
 
-'use client';
-import React, { useState, useEffect, useCallback } from 'react';
-import styles from './page.module.css';
-import Link from 'next/link';
-import { getServices, deleteService, Service, PagedResponse } from '@/utils/api';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import styles from "./page.module.css";
+import { toast } from "react-toastify";
+import ConfirmPopup from "@/components/ConfirmPopup";
 
-const ServiceManagementPage = () => {
-    const [servicesData, setServicesData] = useState<PagedResponse<Service> | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(0);
-    const pageSize = 10;
+interface BackendService {
+    id: number;
+    tenDichVu: string; // Tên dịch vụ
+    moTa?: string; // Mô tả
+    gia: number; // Giá
+    loaiDichVu?: string; // Loại dịch vụ
+    trangThai?: string; // Trạng thái
+}
 
-    const [keyword, setKeyword] = useState('');
-    const [searchKeyword, setSearchKeyword] = useState('');
+interface Service {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    unit: string; // loaiDichVu
+    status: string; // trangThai
+}
 
-    const fetchServices = useCallback(async (page: number, currentKeyword: string) => {
-        setLoading(true);
+function mapService(s: BackendService): Service {
+    return {
+        id: s.id,
+        name: s.tenDichVu,
+        description: s.moTa ?? "",
+        price: s.gia,
+        unit: s.loaiDichVu ?? "Lần",
+        status: s.trangThai ?? "Đang hoạt động",
+    };
+}
+
+export default function ServicesPage() {
+    const [services, setServices] = useState<Service[]>([]);
+    const [filteredServices, setFilteredServices] = useState<Service[]>([]);
+    const [search, setSearch] = useState("");
+    const [unitFilter, setUnitFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [sortField, setSortField] = useState<"id" | "price" | "name" | null>(null);
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    const [totalPages, setTotalPages] = useState(1);
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [serviceToDelete, setServiceToDelete] = useState<{ id: number; displayName: string } | null>(null);
+
+    const loadServices = async (page = currentPage, size = itemsPerPage) => {
         try {
-            const data = await getServices(page, pageSize, currentKeyword);
-            setServicesData(data);
-            setCurrentPage(page);
-        } catch (error) {
-            console.error("Lỗi khi fetch dịch vụ:", error);
-        } finally {
-            setLoading(false);
+            // Backend của bạn dùng query param 'page' và 'size'
+            const res = await fetch(`/api/services?page=${page - 1}&size=${size}`, { cache: "no-store" });
+            if (!res.ok) throw new Error("Failed to fetch services");
+
+            const data: { content: BackendService[], totalPages: number } = await res.json();
+
+            const mapped = data.content.map(mapService);
+            setServices(mapped);
+            setFilteredServices(mapped);
+            setTotalPages(data.totalPages);
+
+        } catch (e) {
+            console.error(e);
+            toast.error("Không thể tải danh sách dịch vụ.");
         }
-    }, []);
+    };
 
     useEffect(() => {
-        fetchServices(0, searchKeyword);
-    }, [fetchServices, searchKeyword]);
+        loadServices(1, itemsPerPage);
+    }, []);
 
-    const handleSearch = () => {
-        setSearchKeyword(keyword);
-    };
+    // Tìm kiếm và Lọc
+    const handleSearch = async () => {
+        try {
+            const keyword = search.trim();
+            const apiUrl = `/api/services/search?keyword=${keyword}&page=0&size=${itemsPerPage}`;
 
-    const handlePageChange = (page: number) => {
-        if (servicesData && page >= 0 && page < servicesData.totalPages) {
-            fetchServices(page, searchKeyword);
-        }
-    };
+            const res = await fetch(apiUrl, { cache: "no-store" });
+            if (!res.ok) throw new Error("Search failed");
 
-    const handleDelete = async (id: number) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa dịch vụ này không?')) {
-            try {
-                await deleteService(id);
-                alert('Xóa dịch vụ thành công!');
-                fetchServices(currentPage, searchKeyword);
-            } catch (error) {
-                console.error("Lỗi khi xóa dịch vụ:", error);
-                alert('Lỗi: Không thể xóa dịch vụ.');
+            const data: { content: BackendService[], totalPages: number } = await res.json();
+            let mapped = data.content.map(mapService);
+
+            if (statusFilter) {
+                mapped = mapped.filter(s => s.status === statusFilter);
             }
+            if (unitFilter) {
+                mapped = mapped.filter(s => s.unit === unitFilter);
+            }
+
+            setFilteredServices(mapped);
+            setTotalPages(data.totalPages);
+            setCurrentPage(1);
+
+        } catch (e) {
+            console.error(e);
+            toast.error("Tìm kiếm dịch vụ thất bại.");
         }
     };
 
-    if (loading && !servicesData) return <div className={styles.container}>Đang tải dịch vụ...</div>;
+    const clearFilters = () => {
+        setSearch("");
+        setUnitFilter("");
+        setStatusFilter("");
+        loadServices(1, itemsPerPage);
+        setCurrentPage(1);
+    };
 
-    const services = servicesData?.content || [];
-    const pageNumber = servicesData?.number ?? 0;
-    const totalPages = servicesData?.totalPages ?? 1;
-    const totalElements = servicesData?.totalElements ?? 0;
+    const handleSort = (field: "id" | "price" | "name") => {
+        let newOrder: "asc" | "desc" = "asc";
+        if (sortField === field && sortOrder === "asc") newOrder = "desc";
+        setSortField(field);
+        setSortOrder(newOrder);
+
+        const sorted = [...filteredServices].sort((a, b) => {
+            let cmp = 0;
+            if (field === "name") {
+                cmp = a.name.localeCompare(b.name);
+            } else {
+                const aValue = a[field] as number;
+                const bValue = b[field] as number;
+                cmp = aValue - bValue;
+            }
+            return newOrder === "asc" ? cmp : -cmp;
+        });
+        setFilteredServices(sorted);
+    };
+
+    // Phân trang
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        loadServices(page, itemsPerPage);
+    }
+
+    const handleDelete = (id: number, displayName: string) => {
+        setServiceToDelete({ id, displayName });
+        setIsPopupOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!serviceToDelete) return;
+
+        const { id, displayName } = serviceToDelete;
+
+        const res = await fetch(`/api/services/${id}`, { method: "DELETE" });
+        if (!res.ok) {
+            toast.error("Xóa dịch vụ thất bại");
+            setIsPopupOpen(false);
+            setServiceToDelete(null);
+            return;
+        }
+
+        await loadServices(currentPage, itemsPerPage);
+
+        toast.success(`Đã xóa dịch vụ ${displayName} thành công!`);
+        setIsPopupOpen(false);
+        setServiceToDelete(null);
+    };
 
     return (
-        <div className={styles.container}>
+        <main className={styles.main}>
+            {/* Banner header */}
+            <section className={styles.pageHeader}>
+                <div className={styles.pageHeaderContent}>
+                    <div>
+                        <h1 className={styles.pageTitle}>Quản lý dịch vụ</h1>
+                        <p className={styles.pageSubtitle}>Quản lý các dịch vụ khách sạn cung cấp</p>
+                    </div>
+                </div>
+            </section>
 
-            <div className={styles.titleSection}>
-                <h2>Quản lý dịch vụ</h2>
-                <p>Quản lý dịch vụ trong khách sạn</p>
+            {/* Filters */}
+            <div className={styles.filters}>
+                <div className={styles.filterLeft}>
+                    <div className={styles.filterGroup}>
+                        <label className={styles.filterLabel}>Tìm kiếm dịch vụ</label>
+                        <input
+                            type="text"
+                            placeholder="Nhập tên hoặc loại dịch vụ..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className={styles.search}
+                        />
+                    </div>
+
+                    <div className={styles.filterGroup}>
+                        <label className={styles.filterLabel}>Loại/Đơn vị</label>
+                        <input
+                            type="text"
+                            placeholder="Nhập loại/đơn vị..."
+                            value={unitFilter}
+                            onChange={(e) => setUnitFilter(e.target.value)}
+                            className={styles.input}
+                        />
+                    </div>
+
+                    <div className={styles.filterGroup}>
+                        <label className={styles.filterLabel}>Trạng thái</label>
+                        <select
+                            className={styles.select}
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="">Tất cả</option>
+                            <option value="Đang hoạt động">Đang hoạt động</option>
+                            <option value="Ngừng hoạt động">Ngừng hoạt động</option>
+                        </select>
+                    </div>
+
+                    <div className={styles.filterActions}>
+                        <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSearch}>Tìm kiếm</button>
+                        <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>Xóa bộ lọc</button>
+                    </div>
+                </div>
+                <div className={styles.filterRight}>
+                    <Link href="/service/add" className={styles.addLink}>
+                        +Thêm dịch vụ mới
+                    </Link>
+                </div>
             </div>
 
-            {/* Thanh tìm kiếm và bộ lọc */}
-            <div className={styles.filterSection}>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="search">🔍 Tìm kiếm dịch vụ</label>
-                    <input
-                        id="search"
-                        placeholder="Nhập tên dịch vụ..."
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                    />
-                </div>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="type"> Loại dịch vụ</label>
-                    <select id="type"><option>Tất cả loại</option></select>
-                </div>
-                <div className={styles.inputGroup}>
-                    <label htmlFor="status"> Trạng thái</label>
-                    <select id="status"><option>Tất cả</option></select>
-                </div>
-                <button className={styles.searchButton} onClick={handleSearch}>Tìm kiếm</button>
-                <button className={styles.clearButton} onClick={() => {setKeyword(''); setSearchKeyword('');}}>🗑️ Xóa bộ lọc</button>
+            {/* Info line */}
+            <div className={styles.listInfo}>
+                <span className={styles.infoDot}>i</span>
+                <span>Hiển thị {filteredServices.length} dịch vụ (Trang {currentPage}/{Math.max(totalPages, 1)})</span>
             </div>
 
-            <hr className={styles.divider} />
-
-            <div className={styles.tableHeader}>
-                <span>⚠️ Hiển thị {services.length}/{totalElements} dịch vụ (Trang {pageNumber + 1}/{totalPages})</span>
-                <Link href="/service/add" className={styles.addButton}>
-                    + Thêm dịch vụ mới
-                </Link>
-            </div>
-
-            <table className={styles.dataTable}>
-                <thead>
-                <tr>
-                    <th>Mã DV</th>
-                    <th>Tên dịch vụ</th>
-                    <th>Mô tả</th>
-                    <th>Giá</th>
-                    <th>Loại dịch vụ</th>
-                    <th>Trạng thái</th>
-                    <th>Thao tác</th>
-                </tr>
-                </thead>
-                <tbody>
-                {services.map((service) => (
-                    <tr key={service.id}>
-                        <td>{service.id}</td>
-                        <td>{service.tenDichVu}</td>
-                        <td>{service.moTa}</td>
-                        <td>{service.gia.toLocaleString('vi-VN')} VND</td>
-                        <td>{service.loaiDichVu}</td>
-                        <td>{service.trangThai}</td>
-                        <td>
-                            <Link href={`/service/edit/${service.id}`} className={styles.actionButton}>
-                                Cập nhật
-                            </Link>
-                            <button className={styles.deleteButton} onClick={() => handleDelete(service.id)}>
-                                Xóa
-                            </button>
-                        </td>
+            {/* Table */}
+            <div className={styles.tableWrap}>
+                <table className={styles.table}>
+                    <thead className={styles.thead}>
+                    <tr>
+                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("id")}>
+                            Mã DV
+                            <span className={styles.sortIcon}>{sortField === "id" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}</span>
+                        </th>
+                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("name")}>
+                            Tên dịch vụ
+                            <span className={styles.sortIcon}>{sortField === "name" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}</span>
+                        </th>
+                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("price")}>
+                            Giá
+                            <span className={styles.sortIcon}>{sortField === "price" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}</span>
+                        </th>
+                        <th className={styles.th}>Đơn vị tính</th>
+                        <th className={styles.th}>Mô tả</th>
+                        <th className={styles.th}>Trạng thái</th>
+                        <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
 
-            {/* Phân trang */}
-            <div className={styles.pagination}>
-                <span onClick={() => handlePageChange(0)} className={pageNumber === 0 ? styles.disabled : ''}>&lt;&lt;</span>
-                <span onClick={() => handlePageChange(pageNumber - 1)} className={pageNumber === 0 ? styles.disabled : ''}>&lt;</span>
-                {[...Array(totalPages)].map((_, i) => (
-                    <span
-                        key={i}
-                        className={i === pageNumber ? styles.activePage : ''}
-                        onClick={() => handlePageChange(i)}
-                    >
-                    {i + 1}
-                </span>
-                ))}
-                <span onClick={() => handlePageChange(pageNumber + 1)} className={pageNumber === totalPages - 1 ? styles.disabled : ''}>&gt;</span>
-                <span onClick={() => handlePageChange(totalPages - 1)} className={pageNumber === totalPages - 1 ? styles.disabled : ''}>&gt;&gt;</span>
+                    <tbody>
+                    {filteredServices.length === 0 ? (
+                        <tr>
+                            <td colSpan={7} className={`${styles.td} ${styles.center}`}>
+                                Không tìm thấy dịch vụ nào phù hợp...
+                            </td>
+                        </tr>
+                    ) : (
+                        filteredServices.map((s) => (
+                            <tr key={s.id} className={styles.tr}>
+                                <td className={styles.td} style={{ fontWeight: 600 }}>{s.id}</td>
+                                <td className={styles.td}>{s.name}</td>
+                                <td className={styles.td}>
+                                    {s.price.toLocaleString()} VND / {s.unit}
+                                </td>
+                                <td className={styles.td}>{s.unit}</td>
+                                <td className={styles.td} style={{ color: "#374151" }}>
+                                    {s.description.length > 50 ? s.description.substring(0, 50) + "..." : s.description || "-"}
+                                </td>
+                                <td className={`${styles.td} ${
+                                    s.status === "Đang hoạt động"
+                                        ? styles.statusAvailable 
+                                        : styles.statusReserved 
+                                }`}>
+                                    {s.status}
+                                </td>
+                                <td className={`${styles.td} ${styles.center}`}>
+                                    <Link href={`/service/edit/${s.id}`} className={styles.btnUpdate}>
+                                        Cập nhật
+                                    </Link>
+                                    <button onClick={() => handleDelete(s.id, s.name)} className={styles.btnDelete}>
+                                        Xóa
+                                    </button>
+                                </td>
+                            </tr>
+                        ))
+                    )}
+                    </tbody>
+                </table>
             </div>
-        </div>
-    );
-};
 
-export default ServiceManagementPage;
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className={styles.pagination}>
+                    <div className={styles.pagerGroup}>
+                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(1)}>&laquo;</button>
+                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(Math.max(1, currentPage - 1))}>&lsaquo;</button>
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => handlePageChange(i + 1)}
+                                className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}>&rsaquo;</button>
+                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(totalPages)}>&raquo;</button>
+                    </div>
+                </div>
+            )}
+            <ConfirmPopup
+                isOpen={isPopupOpen}
+                onClose={() => setIsPopupOpen(false)}
+                onConfirm={confirmDelete}
+                title={serviceToDelete ? `Bạn có chắc muốn xóa dịch vụ ${serviceToDelete.displayName}?` : ""}
+            />
+        </main>
+    );
+}
