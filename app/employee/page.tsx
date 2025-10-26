@@ -4,6 +4,8 @@ import styles from "./page.module.css";
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { getEmployees, Employee as ApiEmployee, deleteEmployee } from "@/utils/api";
+import { toast } from "react-toastify";
+import ConfirmPopup from "@/components/ConfirmPopup";
 
 // Use Employee type from API
 type Employee = ApiEmployee;
@@ -11,7 +13,12 @@ type Employee = ApiEmployee;
 export default function EmployeePage() {
     const [filters, setFilters] = useState({ name: "", position: "", email: "" });
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
     const [loading, setLoading] = useState(true);
+    const [sortField, setSortField] = useState<"name" | "salary" | "employeeId" | null>(null);
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [employeeToDelete, setEmployeeToDelete] = useState<{ employeeId: number; name: string } | null>(null);
 
     // Fetch employees from API
     useEffect(() => {
@@ -27,63 +34,84 @@ export default function EmployeePage() {
                 console.log('First employee:', data[0]);
             }
             setEmployees(data);
+            setFilteredEmployees(data);
         } catch (error) {
             console.error("Lỗi khi tải danh sách nhân viên:", error);
-            alert("Không thể tải danh sách nhân viên");
+            toast.error("Không thể tải danh sách nhân viên");
         } finally {
             setLoading(false);
         }
     };
 
-    // Apply filters
-    let filtered = employees.filter(emp => {
-        if (filters.name && !emp.name.toLowerCase().includes(filters.name.toLowerCase())) return false;
-        if (filters.position && emp.position !== filters.position) return false;
-        if (filters.email && !emp.email.toLowerCase().includes(filters.email.toLowerCase())) return false;
-        return true;
-    });
-
-    // Sorting (name, salary)
-    const [sortField, setSortField] = useState<"name" | "salary" | null>(null);
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-    if (sortField) {
-        filtered = [...filtered].sort((a, b) => {
-            let cmp = 0;
-            if (sortField === "name") {
-                cmp = a.name.localeCompare(b.name, "vi", { sensitivity: "base", numeric: true });
-            } else {
-                cmp = a.salary - b.salary;
-            }
-            return sortOrder === "asc" ? cmp : -cmp;
+    // Handle search
+    const handleSearch = () => {
+        const filtered = employees.filter(emp => {
+            if (filters.name && !emp.name.toLowerCase().includes(filters.name.toLowerCase())) return false;
+            if (filters.position && emp.position !== filters.position) return false;
+            if (filters.email && !emp.email.toLowerCase().includes(filters.email.toLowerCase())) return false;
+            return true;
         });
-    }
+        setFilteredEmployees(filtered);
+        setCurrentPage(1);
+    };
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
-    const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-    const paginated = useMemo(
-        () => filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
-        [filtered, currentPage]
-    );
-    const handlePageChange = (p: number) => setCurrentPage(p);
+    // Clear filters
+    const clearFilters = () => {
+        setFilters({ name: "", position: "", email: "" });
+        setFilteredEmployees(employees);
+        setCurrentPage(1);
+    };
 
-    const handleSort = (field: "name" | "salary") => {
+    // Sorting
+    const handleSort = (field: "name" | "salary" | "employeeId") => {
         let newOrder: "asc" | "desc" = "asc";
         if (sortField === field && sortOrder === "asc") newOrder = "desc";
         setSortField(field);
         setSortOrder(newOrder);
+
+        const sorted = [...filteredEmployees].sort((a, b) => {
+            let cmp = 0;
+            if (field === "name") {
+                cmp = a.name.localeCompare(b.name, "vi", { sensitivity: "base", numeric: true });
+            } else {
+                const aValue = a[field] as number;
+                const bValue = b[field] as number;
+                cmp = aValue - bValue;
+            }
+            return newOrder === "asc" ? cmp : -cmp;
+        });
+        setFilteredEmployees(sorted);
     };
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) return;
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+    const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage) || 1;
+    const paginated = useMemo(
+        () => filteredEmployees.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+        [filteredEmployees, currentPage]
+    );
+    const handlePageChange = (p: number) => setCurrentPage(p);
+
+    const handleDelete = (employeeId: number, name: string) => {
+        setEmployeeToDelete({ employeeId, name });
+        setIsPopupOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!employeeToDelete) return;
+
+        const { employeeId, name } = employeeToDelete;
 
         try {
-            await deleteEmployee(id);
-            alert('Xóa nhân viên thành công!');
+            await deleteEmployee(employeeId);
+            toast.success(`Đã xóa nhân viên ${name} thành công!`);
             loadEmployees(); // Reload list
         } catch (error) {
             console.error('Lỗi khi xóa nhân viên:', error);
-            alert('Không thể xóa nhân viên');
+            toast.error('Không thể xóa nhân viên');
+        } finally {
+            setIsPopupOpen(false);
+            setEmployeeToDelete(null);
         }
     };
 
@@ -132,7 +160,7 @@ export default function EmployeePage() {
                     <div className={styles.filterGroup}>
                         <label className={styles.filterLabel}>Tìm kiếm nhân viên</label>
                         <input
-                            className={styles.input}
+                            className={styles.search}
                             type="text"
                             placeholder="Nhập họ tên..."
                             value={filters.name}
@@ -167,7 +195,8 @@ export default function EmployeePage() {
                     </div>
 
                     <div className={styles.filterActions}>
-                        <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setFilters({ name: "", position: "", email: "" })}>Xóa bộ lọc</button>
+                        <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSearch}>Tìm kiếm</button>
+                        <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>Xóa bộ lọc</button>
                     </div>
                 </div>
                 <div className={styles.filterRight}>
@@ -179,8 +208,8 @@ export default function EmployeePage() {
             <div className={styles.listInfo}>
                 <span className={styles.infoDot}>i</span>
                 <span>
-          Hiển thị {paginated.length}/{employees.length} nhân viên (Trang {currentPage}/{totalPages})
-        </span>
+                    Hiển thị {paginated.length}/{employees.length} nhân viên (Trang {currentPage}/{Math.max(totalPages, 1)})
+                </span>
             </div>
 
             {/* Table */}
@@ -188,16 +217,27 @@ export default function EmployeePage() {
                 <table className={styles.table}>
                     <thead className={styles.thead}>
                     <tr>
-                        <th className={styles.th}>Mã NV</th>
-                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("name")}>Họ tên
-                            <span className={styles.sortIcon}>{sortField === "name" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}</span>
+                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("employeeId")}>
+                            Mã NV
+                            <span className={styles.sortIcon}>
+                                {sortField === "employeeId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                            </span>
+                        </th>
+                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("name")}>
+                            Họ tên
+                            <span className={styles.sortIcon}>
+                                {sortField === "name" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                            </span>
                         </th>
                         <th className={styles.th}>Chức vụ</th>
-                        <th className={styles.th}>SDT</th>
+                        <th className={styles.th}>SĐT</th>
                         <th className={styles.th}>Email</th>
                         <th className={styles.th}>Ca làm việc</th>
-                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("salary")}>Lương
-                            <span className={styles.sortIcon}>{sortField === "salary" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}</span>
+                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("salary")}>
+                            Lương
+                            <span className={styles.sortIcon}>
+                                {sortField === "salary" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                            </span>
                         </th>
                         <th className={styles.th}>Trạng thái</th>
                         <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
@@ -214,18 +254,24 @@ export default function EmployeePage() {
                         </tr>
                     ) : (
                         paginated.map((e: Employee) => (
-                            <tr key={e.employeeId}>
-                                <td className={styles.td}>{e.employeeId}</td>
+                            <tr key={e.employeeId} className={styles.tr}>
+                                <td className={styles.td} style={{ fontWeight: 600 }}>{e.employeeId}</td>
                                 <td className={styles.td}>{e.name}</td>
                                 <td className={styles.td}>{e.position ? getRoleDisplay(e.position) : '-'}</td>
                                 <td className={styles.td}>{e.phoneNumber}</td>
                                 <td className={styles.td}>{e.email}</td>
                                 <td className={styles.td}>{e.shift ? getShiftDisplay(e.shift) : '-'}</td>
                                 <td className={styles.td}>{e.salary ? e.salary.toLocaleString('vi-VN') + ' VNĐ' : '-'}</td>
-                                <td className={styles.td}>{e.employeeStatus ? getStatusDisplay(e.employeeStatus) : '-'}</td>
+                                <td className={`${styles.td} ${
+                                      e.employeeStatus === "WORKING"
+                                        ? styles.statusWorking
+                                        : styles.statusResigned
+                                    }`}>
+                                    {e.employeeStatus ? getStatusDisplay(e.employeeStatus) : '-'}
+                                </td>
                                 <td className={`${styles.td} ${styles.center}`}>
-                                    <Link href={`/employee/edit/${e.employeeId}`} className={styles.btnEdit}>Cập nhật</Link>
-                                    <button className={styles.btnDelete} onClick={() => handleDelete(e.employeeId)}>Xóa</button>
+                                    <Link href={`/employee/edit/${e.employeeId}`} className={styles.btnUpdate}>Cập nhật</Link>
+                                    <button className={styles.btnDelete} onClick={() => handleDelete(e.employeeId, e.name)}>Xóa</button>
                                 </td>
                             </tr>
                         ))
@@ -241,13 +287,26 @@ export default function EmployeePage() {
                         <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(1)}>&laquo;</button>
                         <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(Math.max(1, currentPage - 1))}>&lsaquo;</button>
                         {Array.from({ length: totalPages }).map((_, i) => (
-                            <button key={i} className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`} onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
+                            <button
+                                key={i}
+                                onClick={() => handlePageChange(i + 1)}
+                                className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`}
+                            >
+                                {i + 1}
+                            </button>
                         ))}
                         <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}>&rsaquo;</button>
                         <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(totalPages)}>&raquo;</button>
                     </div>
                 </div>
             )}
+            
+            <ConfirmPopup
+                isOpen={isPopupOpen}
+                onClose={() => setIsPopupOpen(false)}
+                onConfirm={confirmDelete}
+                title={employeeToDelete ? `Bạn có chắc muốn xóa nhân viên ${employeeToDelete.name}?` : ""}
+            />
         </main>
     );
 }
