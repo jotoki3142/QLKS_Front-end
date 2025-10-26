@@ -1,0 +1,182 @@
+.main {
+  background-color: #f2f3f7;
+  min-height: 100vh;
+  font-family: "Segoe UI", sans-serif;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header */
+.pageHeader {
+  width: 100%;
+  background-color: #507aa3;
+  color: #fff;
+  padding: 40px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.pageHeaderContent {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.plus {
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.headerTitle {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.headerSubtitle {
+  font-size: 15px;
+  margin-top: 4px;
+  opacity: 0.95;
+}
+
+.backBtn {
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: 0.2s ease;
+}
+
+.backBtn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Card trắng giữa màn hình */
+.card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 40px 50px;
+  width: 100%;
+  max-width: 700px;
+  margin-top: 40px;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.required {
+  color: red;
+}
+
+.input,
+.select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #507aa3;
+}
+
+/* Buttons */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.primaryBtn {
+  background-color: #507aa3;
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-width: 200px;
+}
+
+.primaryBtn:hover {
+  background-color: #40698c;
+}
+
+.cancelBtn {
+  background-color: #ccc;
+  color: #333;
+  padding: 10px 22px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 15px;
+  transition: background-color 0.2s ease;
+  min-width: 200px;
+  text-align: center;
+}
+
+.cancelBtn:hover {
+  background-color: #b3b3b3;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .card {
+    padding: 24px;
+  }
+
+  .pageHeaderContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0 20px;
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .primaryBtn,
+  .cancelBtn {
+    width: 100%;
+  }
+}
