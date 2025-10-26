@@ -52,7 +52,6 @@ export default function EmployeePage() {
     setSortField(field);
     setSortOrder(newOrder);
   };
-
   return (
     <main className={styles.main}>
       {/* Header banner */}
@@ -144,6 +143,7 @@ export default function EmployeePage() {
             </tr>
           </thead>
           <tbody>
+
             {paginated.length === 0 ? (
               <tr>
                 <td colSpan={9} className={`${styles.td} ${styles.center}`}>Không có nhân viên phù hợp...</td>
@@ -155,9 +155,6 @@ export default function EmployeePage() {
                 </tr>
               ))
             )}
-          </tbody>
-        </table>
-      </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -173,6 +170,3 @@ export default function EmployeePage() {
           </div>
         </div>
       )}
-    </main>
-  );
-}

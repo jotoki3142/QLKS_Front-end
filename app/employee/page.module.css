@@ -30,6 +30,9 @@
 }
 
 .searchBox button {
+
+  
+
   background-color: #3b82f6; /* match updateBtn */
   color: white;
   padding: 8px 15px;
@@ -57,6 +60,7 @@
 }
 
 .addBtn {
+
   background-color: #3b82f6; /* match updateBtn */
   color: white;
   padding: 8px 15px;
@@ -169,6 +173,7 @@
 .btnGhost { background: #fff; border-color: #9ca3af; color: #374151; }
 .addLink { background: #2563eb; color: #fff; padding: 0.45rem 0.75rem; border-radius: 9999px; text-decoration: none; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; }
 .addLink:hover { background: #1d4ed8; }
+
 
 /* Info line */
 .listInfo { display: flex; align-items: center; gap: 0.5rem; color: #374151; margin: 0.5rem 0 0.75rem; font-size: 0.95rem; }

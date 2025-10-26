@@ -13,7 +13,7 @@ export default function Navbar() {
     { label: "Đặt phòng", href: "/booking" },
     { label: "Nhân viên", href: "/employee" },
     { label: "Dịch vụ", href: "/service" },
-    { label: "Sử dụng dịch vụ", href: "/usage" },
+    { label: "Sử dụng dịch vụ", href: "/serviceuse" },
     { label: "Hóa đơn", href: "/bill" },
   ];
 
