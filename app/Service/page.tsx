@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
+import ConfirmPopup from "@/components/ConfirmPopup";
+import { toast } from "react-toastify";
 
 interface Service {
     serviceId: number;
@@ -13,32 +15,34 @@ interface Service {
 
 interface BackendService {
     serviceId: number;
-    name: string;
-    serviceType: "ONCE" | "HOURLY" | "DAILY" | "CONSUMABLE" | string;
-    serviceStatus: "ACTIVE" | "INACTIVE" | "OUT_OF_STOCK" | string;
+    tenDichVu: string;
+    loaiDichVu: "PER_USE" | "PER_HOUR" | "PER_DAY" | "CONSUMABLE" | string;
+    trangThai: "ACTIVE" | "INACTIVE" | "TEMPORARY_OUT" | string;
 }
 
 function mapService(s: BackendService): Service {
     const typeMap: Record<string, string> = {
-        ONCE: "Tính theo lần",
-        HOURLY: "Tính theo giờ",
-        DAILY: "Tính theo ngày",
+        PER_USE: "Tính theo lần",
+        PER_HOUR: "Tính theo giờ",
+        PER_DAY: "Tính theo ngày",
         CONSUMABLE: "Tiêu hao",
     };
 
     const statusMap: Record<string, string> = {
         ACTIVE: "Đang hoạt động",
         INACTIVE: "Ngừng hoạt động",
-        OUT_OF_STOCK: "Tạm thời hết",
+        TEMPORARY_OUT: "Tạm thời hết",
     };
 
     return {
         serviceId: s.serviceId,
-        name: s.name,
-        type: typeMap[s.serviceType] ?? s.serviceType,
-        status: statusMap[s.serviceStatus] ?? s.serviceStatus,
+        name: s.tenDichVu,
+        type: typeMap[s.loaiDichVu] ?? s.loaiDichVu,
+        status: statusMap[s.trangThai] ?? s.trangThai,
     };
 }
+
+// Convert localized strings back to enum when sending filters if necessary (we already use enum values in selects)
 
 export default function ServicePage() {
     const [services, setServices] = useState<Service[]>([]);
@@ -47,12 +51,15 @@ export default function ServicePage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+    const [serviceToDelete, setServiceToDelete] = useState<{ id: number; displayId: string } | null>(null);
+
     useEffect(() => {
         const load = async () => {
             const params = new URLSearchParams();
-            if (filters.name.trim()) params.set("name", filters.name);
-            if (filters.type.trim()) params.set("type", filters.type);
-            if (filters.status.trim()) params.set("status", filters.status);
+            if (filters.name.trim()) params.set("keyword", filters.name.trim());
+            if (filters.type.trim()) params.set("loaiDichVu", filters.type.trim());
+            if (filters.status.trim()) params.set("status", filters.status.trim());
 
             const url = `/api/service/api/list${params.toString() ? `?${params}` : ""}`;
             const res = await fetch(url, { cache: "no-store" });
@@ -63,7 +70,8 @@ export default function ServicePage() {
                 return;
             }
 
-            const data: BackendService[] = await res.json();
+            const raw = await res.json();
+            const data: BackendService[] = raw.content || raw;
             const mapped = data.map(mapService);
 
             setServices(mapped);
@@ -81,6 +89,39 @@ export default function ServicePage() {
         () => filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
         [filtered, currentPage]
     );
+
+    const handleDelete = (id: number) => {
+        setServiceToDelete({ id, displayId: String(id).padStart(3, "0") });
+        setIsPopupOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!serviceToDelete) return;
+        try {
+            const res = await fetch(`/api/service/api/delete/${serviceToDelete.id}`, { method: "POST" });
+            if (res.status >= 400) {
+                const msg = await res.text();
+                toast.error(msg || "Xóa dịch vụ thất bại");
+                return;
+            }
+            // reload list
+            const reload = await fetch(`/api/service/api/list`, { cache: "no-store" });
+            if (reload.ok) {
+                const raw2 = await reload.json();
+                const data: BackendService[] = raw2.content || raw2;
+                const mapped = data.map(mapService);
+                setServices(mapped);
+                setFiltered(mapped);
+            }
+            toast.success(`Đã xóa dịch vụ ${serviceToDelete.displayId} thành công!`);
+        } catch (e) {
+            console.error(e);
+            toast.error("Có lỗi xảy ra khi xóa dịch vụ");
+        } finally {
+            setIsPopupOpen(false);
+            setServiceToDelete(null);
+        }
+    };
 
     return (
         <main className={styles.main}>
@@ -116,9 +157,9 @@ export default function ServicePage() {
                             onChange={(e) => setFilters({ ...filters, type: e.target.value })}
                         >
                             <option value="">Tất cả</option>
-                            <option value="ONCE">Tính theo lần</option>
-                            <option value="HOURLY">Tính theo giờ</option>
-                            <option value="DAILY">Tính theo ngày</option>
+                            <option value="PER_USE">Tính theo lần</option>
+                            <option value="PER_HOUR">Tính theo giờ</option>
+                            <option value="PER_DAY">Tính theo ngày</option>
                             <option value="CONSUMABLE">Tiêu hao</option>
                         </select>
                     </div>
@@ -133,7 +174,7 @@ export default function ServicePage() {
                             <option value="">Tất cả</option>
                             <option value="ACTIVE">Đang hoạt động</option>
                             <option value="INACTIVE">Ngừng hoạt động</option>
-                            <option value="OUT_OF_STOCK">Tạm thời hết</option>
+                            <option value="TEMPORARY_OUT">Tạm thời hết</option>
                         </select>
                     </div>
 
@@ -186,10 +227,10 @@ export default function ServicePage() {
                                 <td className={styles.td}>{s.type}</td>
                                 <td className={styles.td}>{s.status}</td>
                                 <td className={`${styles.td} ${styles.center}`}>
-                                    <Link href={`/service/edit/${s.serviceId}`} className={styles.updateBtn}>
+                                    <Link href={`/service/edit/${s.serviceId}`} className={styles.btnUpdate}>
                                         Cập nhật
                                     </Link>
-                                    <button className={styles.deleteBtn}>Xóa</button>
+                                    <button onClick={() => handleDelete(s.serviceId)} className={styles.btnDelete}>Xóa</button>
                                 </td>
                             </tr>
                         ))
@@ -201,19 +242,28 @@ export default function ServicePage() {
             {/* PAGINATION */}
             {totalPages > 1 && (
                 <div className={styles.pagination}>
-                    {Array.from({ length: totalPages }).map((_, i) => (
-                        <button
-                            key={i}
-                            className={`${styles.pageButton} ${
-                                currentPage === i + 1 ? styles.pageButtonActive : ""
-                            }`}
-                            onClick={() => setCurrentPage(i + 1)}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
+                    <div className={styles.pagerGroup}>
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                            <button
+                                key={i}
+                                className={`${styles.pageButton} ${
+                                    currentPage === i + 1 ? styles.pageButtonActive : ""
+                                }`}
+                                onClick={() => setCurrentPage(i + 1)}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             )}
+
+            <ConfirmPopup
+                isOpen={isPopupOpen}
+                onClose={() => setIsPopupOpen(false)}
+                onConfirm={confirmDelete}
+                title={serviceToDelete ? `Bạn có chắc muốn xóa dịch vụ ${serviceToDelete.displayId}?` : ""}
+            />
         </main>
     );
 }
