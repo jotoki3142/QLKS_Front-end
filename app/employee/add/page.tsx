@@ -14,18 +14,37 @@ export default function AddEmployee() {
     phoneNumber: 0,
     email: "",
     shift: "" as EmployeeShift,
-    salary: 0,
+    salary: 1, // Lương mặc định 1 VNĐ (backend yêu cầu > 0)
     employeeStatus: "WORKING" as EmployeeStatus,
   });
+  const [phoneInput, setPhoneInput] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'phoneNumber' || name === 'salary' 
-        ? (value ? parseFloat(value) : 0) 
-        : value,
-    }));
+    
+    if (name === 'phoneNumber') {
+      // Chỉ cho phép nhập số, giới hạn 10 ký tự
+      const numericValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+      setPhoneInput(numericValue);
+      setFormData(prev => ({
+        ...prev,
+        phoneNumber: numericValue ? parseInt(numericValue) : 0,
+      }));
+    } else if (name === 'email') {
+      // Validate email real-time
+      setFormData(prev => ({ ...prev, email: value }));
+      if (value && !value.endsWith('@gmail.com')) {
+        setEmailError('Email phải có đuôi @gmail.com');
+      } else {
+        setEmailError('');
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,20 +59,24 @@ export default function AddEmployee() {
       alert('Vui lòng chọn chức vụ');
       return;
     }
-    if (!formData.phoneNumber || formData.phoneNumber.toString().length !== 10) {
-      alert('Số điện thoại phải có 10 số');
+    if (!phoneInput || phoneInput.length !== 10) {
+      alert('Số điện thoại phải có đúng 10 số');
       return;
     }
-    if (!formData.email.includes('@')) {
-      alert('Email không hợp lệ');
+    if (!phoneInput.startsWith('0')) {
+      alert('Số điện thoại phải bắt đầu bằng số 0');
+      return;
+    }
+    if (!formData.email.trim()) {
+      alert('Vui lòng nhập email');
+      return;
+    }
+    if (!formData.email.endsWith('@gmail.com')) {
+      alert('Email phải có đuôi @gmail.com');
       return;
     }
     if (!formData.shift) {
       alert('Vui lòng chọn ca làm việc');
-      return;
-    }
-    if (formData.salary <= 0) {
-      alert('Lương phải lớn hơn 0');
       return;
     }
 
@@ -121,11 +144,12 @@ export default function AddEmployee() {
               <label className={styles.label}>Số điện thoại <span className={styles.required}>*</span></label>
               <input 
                 className={styles.input} 
-                type="number" 
+                type="text" 
                 name="phoneNumber"
-                placeholder="Nhập SDT..." 
-                value={formData.phoneNumber || ''}
+                placeholder="Nhập SDT (10 số, bắt đầu bằng 0)..." 
+                value={phoneInput}
                 onChange={handleChange}
+                maxLength={10}
                 required 
               />
             </div>
@@ -136,11 +160,13 @@ export default function AddEmployee() {
                 className={styles.input} 
                 type="email" 
                 name="email"
-                placeholder="Nhập email..." 
+                placeholder="Nhập email (@gmail.com)..." 
                 value={formData.email}
                 onChange={handleChange}
+                pattern="[a-zA-Z0-9._%+-]+@gmail\.com"
                 required 
               />
+              {emailError && <span style={{ color: 'red', fontSize: '12px', marginTop: '4px' }}>{emailError}</span>}
             </div>
 
             <div className={styles.field}>
@@ -159,34 +185,6 @@ export default function AddEmployee() {
               </select>
             </div>
 
-            <div className={styles.field}>
-              <label className={styles.label}>Lương <span className={styles.required}>*</span></label>
-              <input 
-                className={styles.input} 
-                type="number" 
-                name="salary"
-                placeholder="Nhập lương..." 
-                value={formData.salary || ''}
-                onChange={handleChange}
-                min="0"
-                step="1000"
-                required 
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label}>Trạng thái <span className={styles.required}>*</span></label>
-              <select 
-                className={styles.select} 
-                name="employeeStatus"
-                value={formData.employeeStatus}
-                onChange={handleChange}
-                required
-              >
-                <option value="WORKING">Đang làm</option>
-                <option value="RESIGNED">Nghỉ</option>
-              </select>
-            </div>
           </div>
 
           <div className={styles.actions}>

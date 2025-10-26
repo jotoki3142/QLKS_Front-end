@@ -110,12 +110,22 @@ export interface Employee {
 export type NewEmployee = Omit<Employee, 'employeeId'>;
 
 // --- Employee API Functions ---
-export const getEmployees = (): Promise<Employee[]> => {
-    return apiFetch(`${API_BASE_URL}/employee/api/list`);
+export const getEmployees = async (): Promise<Employee[]> => {
+    const data = await apiFetch(`${API_BASE_URL}/employee/api/list`);
+    // Map backend field 'role' to frontend field 'position' if needed
+    return data.map((emp: any) => ({
+        ...emp,
+        position: emp.position || emp.role, // Handle both field names
+    }));
 };
 
-export const getEmployeeById = (id: number): Promise<Employee> => {
-    return apiFetch(`${API_BASE_URL}/employee/api/${id}`);
+export const getEmployeeById = async (id: number): Promise<Employee> => {
+    const data = await apiFetch(`${API_BASE_URL}/employee/api/${id}`);
+    // Map backend field 'role' to frontend field 'position' if needed
+    return {
+        ...data,
+        position: data.position || data.role,
+    };
 };
 
 export const addEmployee = (newEmployee: NewEmployee): Promise<Employee> => {

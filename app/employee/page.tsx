@@ -22,6 +22,10 @@ export default function EmployeePage() {
     try {
       setLoading(true);
       const data = await getEmployees();
+      console.log('Employee data from API:', data);
+      if (data.length > 0) {
+        console.log('First employee:', data[0]);
+      }
       setEmployees(data);
     } catch (error) {
       console.error("Lỗi khi tải danh sách nhân viên:", error);
@@ -213,14 +217,14 @@ export default function EmployeePage() {
                 <tr key={e.employeeId}>
                   <td className={styles.td}>{e.employeeId}</td>
                   <td className={styles.td}>{e.name}</td>
-                  <td className={styles.td}>{getRoleDisplay(e.position)}</td>
+                  <td className={styles.td}>{e.position ? getRoleDisplay(e.position) : '-'}</td>
                   <td className={styles.td}>{e.phoneNumber}</td>
                   <td className={styles.td}>{e.email}</td>
-                  <td className={styles.td}>{getShiftDisplay(e.shift)}</td>
-                  <td className={styles.td}>{e.salary.toLocaleString('vi-VN')} VNĐ</td>
-                  <td className={styles.td}>{getStatusDisplay(e.employeeStatus)}</td>
+                  <td className={styles.td}>{e.shift ? getShiftDisplay(e.shift) : '-'}</td>
+                  <td className={styles.td}>{e.salary ? e.salary.toLocaleString('vi-VN') + ' VNĐ' : '-'}</td>
+                  <td className={styles.td}>{e.employeeStatus ? getStatusDisplay(e.employeeStatus) : '-'}</td>
                   <td className={`${styles.td} ${styles.center}`}>
-                    <Link href={`/employee/edit/${e.employeeId}`} className={styles.btnEdit}>Sửa</Link>
+                    <Link href={`/employee/edit/${e.employeeId}`} className={styles.btnEdit}>Cập nhật</Link>
                     <button className={styles.btnDelete} onClick={() => handleDelete(e.employeeId)}>Xóa</button>
                   </td>
                 </tr>
