@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
+import { toast } from "react-toastify";
+import ConfirmPopup from "@/components/ConfirmPopup";
 
 interface Booking {
   bookingId: number;
@@ -24,8 +26,8 @@ interface BackendBooking {
 
 function mapBooking(b: BackendBooking): Booking {
   const statusMap: Record<string, string> = {
-    PENDING: "Đang chờ",
-    CONFIRMED: "Đã nhận",
+    PENDING: "Đang chờ xác nhận",
+    CONFIRMED: "Đã xác nhận",
     CANCELLED: "Đã hủy",
   };
   return {
@@ -42,36 +44,92 @@ export default function BookingPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filtered, setFiltered] = useState<Booking[]>([]);
   const [filters, setFilters] = useState({ customerId: "", status: "", roomId: "" });
+  const [sortField, setSortField] = useState<"bookingId" | "customerId" | "roomId" | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [bookingToDelete, setBookingToDelete] = useState<{ bookingId: number; displayId: string } | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      const params = new URLSearchParams();
-      if (filters.roomId.trim()) params.set("roomId", String(Number(filters.roomId)));
-      if (filters.customerId.trim()) params.set("customerId", String(Number(filters.customerId)));
-      if (filters.status.trim()) {
-        const toEnum = (v: string) => (v === "Đã nhận" ? "CONFIRMED" : v === "Đã hủy" ? "CANCELLED" : v === "Đang chờ" ? "PENDING" : "");
-        const st = toEnum(filters.status);
-        if (st) params.set("status", st);
-      }
-      const url = `/api/booking/api/list${params.toString() ? `?${params.toString()}` : ""}`;
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) {
+      try {
+        const params = new URLSearchParams();
+        if (filters.roomId.trim()) params.set("roomId", String(Number(filters.roomId)));
+        if (filters.customerId.trim()) params.set("customerId", String(Number(filters.customerId)));
+        if (filters.status.trim()) {
+          const toEnum = (v: string) => {
+            if (v === "Đã xác nhận") return "CONFIRMED";
+            if (v === "Đã hủy") return "CANCELLED"; 
+            if (v === "Đang chờ xác nhận") return "PENDING";
+            return "";
+          };
+          const st = toEnum(filters.status);
+          if (st) params.set("status", st);
+        }
+        const url = `/api/booking/api/list${params.toString() ? `?${params.toString()}` : ""}`;
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) {
+          console.error('Failed to fetch bookings:', res.status, res.statusText);
+          setBookings([]);
+          setFiltered([]);
+          return;
+        }
+        const data: BackendBooking[] = await res.json();
+        console.log('Loaded bookings:', data);
+        const mapped = data.map(mapBooking);
+        setBookings(mapped);
+        setFiltered(mapped);
+        setCurrentPage(1);
+      } catch (error) {
+        console.error('Error loading bookings:', error);
         setBookings([]);
         setFiltered([]);
-        return;
       }
-      const data: BackendBooking[] = await res.json();
-      const mapped = data.map(mapBooking);
-      setBookings(mapped);
-      setFiltered(mapped);
-      setCurrentPage(1);
     };
-    load().catch(() => {});
+    load();
   }, [filters.roomId, filters.customerId, filters.status]);
 
-  const clearFilters = () => setFilters({ customerId: "", status: "", roomId: "" });
+  // Add a separate effect to reload data when component mounts or page becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Reload data when page becomes visible (e.g., navigating back)
+        setFilters(prev => ({ ...prev })); // This will trigger the above useEffect
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  const handleSearch = () => {
+    // Since we're using useEffect with dependency on filters, search is automatic
+    setCurrentPage(1);
+  };
+
+  const clearFilters = () => {
+    setFilters({ customerId: "", status: "", roomId: "" });
+    setCurrentPage(1);
+  };
+
+  // Sorting
+  const handleSort = (field: "bookingId" | "customerId" | "roomId") => {
+    let newOrder: "asc" | "desc" = "asc";
+    if (sortField === field && sortOrder === "asc") newOrder = "desc";
+    setSortField(field);
+    setSortOrder(newOrder);
+
+    const sorted = [...filtered].sort((a, b) => {
+      const aValue = a[field] as number;
+      const bValue = b[field] as number;
+      const cmp = aValue - bValue;
+      return newOrder === "asc" ? cmp : -cmp;
+    });
+    setFiltered(sorted);
+  };
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
   const shown = useMemo(
@@ -81,9 +139,47 @@ export default function BookingPage() {
 
   const handlePageChange = (p: number) => setCurrentPage(p);
 
+  // Delete booking
+  const handleDelete = (bookingId: number, displayId: string) => {
+    setBookingToDelete({ bookingId, displayId });
+    setIsPopupOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!bookingToDelete) return;
+
+    const { bookingId, displayId } = bookingToDelete;
+
+    try {
+      const res = await fetch(`/api/booking/api/delete/${bookingId}`, { method: "DELETE" });
+      if (!res.ok) {
+        toast.error("Xóa đặt phòng thất bại");
+        setIsPopupOpen(false);
+        setBookingToDelete(null);
+        return;
+      }
+      
+      // Reload list
+      const reload = await fetch(`/api/booking/api/list`, { cache: "no-store" });
+      if (reload.ok) {
+        const data: BackendBooking[] = await reload.json();
+        const mapped = data.map(mapBooking);
+        setBookings(mapped);
+        setFiltered(mapped);
+      }
+      toast.success(`Đã xóa đặt phòng ${displayId} thành công!`);
+    } catch (error) {
+      console.error('Error deleting booking:', error);
+      toast.error("Có lỗi xảy ra khi xóa đặt phòng");
+    } finally {
+      setIsPopupOpen(false);
+      setBookingToDelete(null);
+    }
+  };
+
   return (
     <main className={styles.main}>
-      {/* Header banner */}
+      {/* Banner header */}
       <section className={styles.pageHeader}>
         <div className={styles.pageHeaderContent}>
           <div>
@@ -97,11 +193,11 @@ export default function BookingPage() {
       <div className={styles.filters}>
         <div className={styles.filterLeft}>
           <div className={styles.filterGroup}>
-            <label className={styles.filterLabel}>Mã KH</label>
+            <label className={styles.filterLabel}>Tìm kiếm đặt phòng</label>
             <input
-              className={styles.input}
+              className={styles.search}
               type="text"
-              placeholder="Nhập mã KH..."
+              placeholder="Nhập mã đặt phòng..."
               value={filters.customerId}
               onChange={(e) => setFilters({ ...filters, customerId: e.target.value })}
             />
@@ -115,8 +211,8 @@ export default function BookingPage() {
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
             >
               <option value="">Tất cả trạng thái</option>
-              <option>Đang chờ</option>
-              <option>Đã nhận</option>
+              <option>Đang chờ xác nhận</option>
+              <option>Đã xác nhận</option>
               <option>Đã hủy</option>
             </select>
           </div>
@@ -133,21 +229,21 @@ export default function BookingPage() {
           </div>
 
           <div className={styles.filterActions}>
-            <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={() => setFilters({ ...filters })}>Tìm kiếm</button>
+            <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSearch}>Tìm kiếm</button>
             <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>Xóa bộ lọc</button>
           </div>
         </div>
         <div className={styles.filterRight}>
-          <Link href="/booking/add" className={styles.addLink}>+ Thêm đặt phòng mới</Link>
+          <Link href="/booking/add" className={styles.addLink}>
+            + Thêm đặt phòng mới
+          </Link>
         </div>
       </div>
 
       {/* Info line */}
       <div className={styles.listInfo}>
         <span className={styles.infoDot}>i</span>
-        <span>
-          Hiển thị {shown.length}/{bookings.length} đặt phòng (Trang {currentPage}/{totalPages})
-        </span>
+        <span>Hiển thị {shown.length}/{bookings.length} đặt phòng (Trang {currentPage}/{Math.max(totalPages, 1)})</span>
       </div>
 
       {/* Table */}
@@ -155,9 +251,24 @@ export default function BookingPage() {
         <table className={styles.table}>
           <thead className={styles.thead}>
             <tr>
-              <th className={styles.th}>Mã đặt phòng</th>
-              <th className={styles.th}>Mã KH</th>
-              <th className={styles.th}>Mã phòng</th>
+              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("bookingId")}>
+                Mã đặt phòng
+                <span className={styles.sortIcon}>
+                  {sortField === "bookingId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                </span>
+              </th>
+              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("customerId")}>
+                Mã KH
+                <span className={styles.sortIcon}>
+                  {sortField === "customerId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                </span>
+              </th>
+              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("roomId")}>
+                Mã phòng
+                <span className={styles.sortIcon}>
+                  {sortField === "roomId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                </span>
+              </th>
               <th className={styles.th}>Check in</th>
               <th className={styles.th}>Check out</th>
               <th className={styles.th}>Trạng thái</th>
@@ -167,20 +278,34 @@ export default function BookingPage() {
           <tbody>
             {shown.length === 0 ? (
               <tr>
-                <td colSpan={7} className={`${styles.td} ${styles.center}`}>Không có đặt phòng phù hợp...</td>
+                <td colSpan={7} className={`${styles.td} ${styles.center}`}>
+                  Không tìm thấy đặt phòng nào phù hợp...
+                </td>
               </tr>
             ) : (
               shown.map((b) => (
-                <tr key={b.bookingId}>
-                  <td className={styles.td}>{String(b.bookingId).padStart(3, "0")}</td>
+                <tr key={b.bookingId} className={styles.tr}>
+                  <td className={styles.td} style={{ fontWeight: 600 }}>{String(b.bookingId).padStart(3, "0")}</td>
                   <td className={styles.td}>{b.customerId}</td>
                   <td className={styles.td}>{b.roomId}</td>
-                  <td className={styles.td}>{b.checkIn.toISOString().slice(0,10)}</td>
-                  <td className={styles.td}>{b.checkOut.toISOString().slice(0,10)}</td>
-                  <td className={styles.td}>{b.status}</td>
+                  <td className={styles.td}>{b.checkIn.toLocaleDateString("vi-VN")}</td>
+                  <td className={styles.td}>{b.checkOut.toLocaleDateString("vi-VN")}</td>
+                  <td className={`${styles.td} ${
+                      b.status === "Đã xác nhận"
+                        ? styles.statusConfirmed
+                        : b.status === "Đã hủy"
+                        ? styles.statusCancelled
+                        : styles.statusPending
+                    }`}>
+                    {b.status}
+                  </td>
                   <td className={`${styles.td} ${styles.center}`}>
-                    <Link href={`/booking/edit/${b.bookingId}`} className={styles.updateBtn}>Cập nhật</Link>
-                    <button className={styles.deleteBtn}>Xóa</button>
+                    <Link href={`/booking/edit/${b.bookingId}`} className={styles.btnUpdate}>
+                      Cập nhật
+                    </Link>
+                    <button onClick={() => handleDelete(b.bookingId, String(b.bookingId).padStart(3, "0"))} className={styles.btnDelete}>
+                      Xóa
+                    </button>
                   </td>
                 </tr>
               ))
@@ -196,13 +321,26 @@ export default function BookingPage() {
             <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(1)}>&laquo;</button>
             <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(Math.max(1, currentPage - 1))}>&lsaquo;</button>
             {Array.from({ length: totalPages }).map((_, i) => (
-              <button key={i} className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`} onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
+              <button
+                key={i}
+                onClick={() => handlePageChange(i + 1)}
+                className={`${styles.pageButton} ${currentPage === i + 1 ? styles.pageButtonActive : ""}`}
+              >
+                {i + 1}
+              </button>
             ))}
             <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}>&rsaquo;</button>
             <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(totalPages)}>&raquo;</button>
           </div>
         </div>
       )}
+      
+      <ConfirmPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        onConfirm={confirmDelete}
+        title={bookingToDelete ? `Bạn có chắc muốn xóa đặt phòng ${bookingToDelete.displayId}?` : ""}
+      />
     </main>
   );
 }
