@@ -12,8 +12,8 @@ export default function Navbar() {
     { label: "Khách hàng", href: "/customer" },
     { label: "Đặt phòng", href: "/booking" },
     { label: "Nhân viên", href: "/employee" },
-    { label: "Dịch vụ", href: "/service" },
-    { label: "Sử dụng dịch vụ", href: "/serviceuse" },
+    { label: "Dịch vụ", href: "/Service" },
+    { label: "Sử dụng dịch vụ", href: "/ServiceUse" },
     { label: "Hóa đơn", href: "/bill" },
   ];
 
