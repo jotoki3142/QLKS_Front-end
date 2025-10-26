@@ -9,7 +9,7 @@
 /* Banner */
 .pageHeader {
   margin: 0 -2rem 1rem -2rem;
-  background: linear-gradient(90deg, #425383 100%);
+  background: #4a7ba8;
   color: #fff;
 }
 .pageHeaderContent {
@@ -57,7 +57,7 @@
 /* Table */
 .tableWrap { overflow-x: auto; background: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; }
 .table { min-width: 100%; border-collapse: collapse; font-size: 1rem; }
-.thead { background: #425383; color: #ffffff; }
+.thead { background: #4a7ba8; color: #ffffff; }
 .th, .td { padding: 0.9rem 1rem; border-bottom: 1px solid #e5e7eb; text-align: left; vertical-align: middle; }
 .clickable { cursor: pointer; user-select: none; }
 .sortIcon { font-size: 0.9rem; margin-left: 0.25rem; }

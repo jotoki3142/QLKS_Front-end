@@ -121,13 +121,20 @@ export default function AddRoomPage() {
 
   return (
     <main className={styles.main}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Thêm phòng mới</h1>
-          <Link href="/rooms" className={styles.backButton}>
-            ← Quay lại
-          </Link>
+      <section className={styles.pageHeader}>
+        <div className={styles.pageHeaderContent}>
+          <div className={styles.headerLeft}>
+            <span className={styles.plus}>+</span>
+            <div>
+              <h1 className={styles.headerTitle}>Thêm phòng mới</h1>
+              <p className={styles.headerSubtitle}>Thêm phòng mới vào danh sách</p>
+            </div>
+          </div>
+          <Link href="/rooms" className={styles.backBtn}>← Quay lại</Link>
         </div>
+      </section>
+
+      <div className={styles.container}>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           {/* Số phòng  */}
@@ -246,10 +253,11 @@ export default function AddRoomPage() {
             </div>
           </div>
 
-          <div>
+          <div className={styles.actions}>
             <button type="submit" disabled={saving} className={styles.submit}>
-              {saving ? "Đang lưu..." : "Thêm phòng"}
+              {saving ? "Đang lưu..." : "Lưu phòng"}
             </button>
+            <Link href="/rooms" className={styles.cancel}>Hủy</Link>
           </div>
         </form>
       </div>

@@ -1,12 +1,13 @@
 {
-  "name": "qlsk_front-end",
+  "name": "qlks_front-end",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "date-fns": "^4.1.0",
