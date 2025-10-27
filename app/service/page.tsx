@@ -72,10 +72,11 @@ export default function ServicePage() {
 
             const raw = await res.json();
             const data: BackendService[] = raw.content || raw;
-            const mapped = data.map(mapService).sort((a, b) => a.serviceId - b.serviceId);
+            const mapped = data.map(mapService);
+            const sorted = mapped.sort((a, b) => a.serviceId - b.serviceId);
 
-            setServices(mapped);
-            setFiltered(mapped);
+            setServices(sorted);
+            setFiltered(sorted);
         };
 
         load().catch(() => {});
@@ -143,6 +144,8 @@ export default function ServicePage() {
         [filtered, currentPage]
     );
 
+    const handlePageChange = (page: number) => setCurrentPage(page);
+
     const handleDelete = (id: number) => {
         setServiceToDelete({ id, displayId: String(id).padStart(3, "0") });
         setIsPopupOpen(true);
@@ -162,9 +165,10 @@ export default function ServicePage() {
             if (reload.ok) {
                 const raw2 = await reload.json();
                 const data: BackendService[] = raw2.content || raw2;
-                const mapped = data.map(mapService).sort((a, b) => a.serviceId - b.serviceId);
-                setServices(mapped);
-                setFiltered(mapped);
+                const mapped = data.map(mapService);
+                const sorted = mapped.sort((a, b) => a.serviceId - b.serviceId);
+                setServices(sorted);
+                setFiltered(sorted);
             }
             toast.success(`Đã xóa dịch vụ ${serviceToDelete.displayId} thành công!`);
         } catch (e) {
@@ -293,7 +297,15 @@ export default function ServicePage() {
                                 <td className={styles.td}>{s.name}</td>
                                 <td className={styles.td}>{s.type}</td>
                                 <td className={styles.td}>{s.price.toLocaleString()} VNĐ</td>
-                                <td className={styles.td}>{s.status}</td>
+                                <td className={`${styles.td} ${
+                                    s.status === "Đang hoạt động"
+                                        ? styles.statusActive
+                                        : s.status === "Ngừng hoạt động"
+                                        ? styles.statusInactive
+                                        : styles.statusTemporaryOut
+                                }`}>
+                                    {s.status}
+                                </td>
                                 <td className={`${styles.td} ${styles.center}`}>
                                     <Link href={`/service/edit/${s.serviceId}`} className={styles.btnUpdate}>
                                         Cập nhật
@@ -311,17 +323,21 @@ export default function ServicePage() {
             {totalPages > 1 && (
                 <div className={styles.pagination}>
                     <div className={styles.pagerGroup}>
+                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(1)}>&laquo;</button>
+                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === 1} onClick={() => handlePageChange(Math.max(1, currentPage - 1))}>&lsaquo;</button>
                         {Array.from({ length: totalPages }).map((_, i) => (
                             <button
                                 key={i}
                                 className={`${styles.pageButton} ${
                                     currentPage === i + 1 ? styles.pageButtonActive : ""
                                 }`}
-                                onClick={() => setCurrentPage(i + 1)}
+                                onClick={() => handlePageChange(i + 1)}
                             >
                                 {i + 1}
                             </button>
                         ))}
+                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}>&rsaquo;</button>
+                        <button className={`${styles.pageButton} ${styles.pageArrow}`} disabled={currentPage === totalPages} onClick={() => handlePageChange(totalPages)}>&raquo;</button>
                     </div>
                 </div>
             )}
