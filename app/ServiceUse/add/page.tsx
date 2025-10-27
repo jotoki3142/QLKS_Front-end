@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./page.module.css";
@@ -8,13 +8,14 @@ import { toast } from "react-toastify";
 
 export default function AddServiceUsePage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     bookingId: "",
     serviceId: "",
-    quantity: "",
-    usageDate: "",
+    quantity: "1",
+    usageDate: new Date().toISOString().split("T")[0],
   });
-  const [loading, setLoading] = useState(false);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,11 +32,16 @@ export default function AddServiceUsePage() {
 
     setLoading(true);
     try {
+      // Validate service ID is provided
+      if (!formData.serviceId) {
+        throw new Error("Vui lòng chọn dịch vụ");
+      }
+
       const payload = {
         bookingId: parseInt(formData.bookingId),
         serviceId: parseInt(formData.serviceId),
-        quantity: parseInt(formData.quantity),
-        usageDate: formData.usageDate,
+        quantity: parseInt(formData.quantity) || 1, // Default to 1 if not provided
+        usageDate: formData.usageDate || new Date().toISOString().split('T')[0], // Default to today
       };
 
       const res = await fetch("/api/service-usage/api/add", {
@@ -45,8 +51,12 @@ export default function AddServiceUsePage() {
       });
 
       if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error);
+        const errorText = await res.text();
+        // Handle specific error for service not found
+        if (errorText.includes("Service not found")) {
+          throw new Error("Không tìm thấy dịch vụ. Vui lòng kiểm tra lại mã dịch vụ.");
+        }
+        throw new Error(errorText || "Có lỗi xảy ra khi thêm dịch vụ");
       }
 
       toast.success("Thêm sử dụng dịch vụ thành công!");
