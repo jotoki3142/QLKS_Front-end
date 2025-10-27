@@ -286,8 +286,8 @@ export default function BookingPage() {
               shown.map((b) => (
                 <tr key={b.bookingId} className={styles.tr}>
                   <td className={styles.td} style={{ fontWeight: 600 }}>{String(b.bookingId).padStart(3, "0")}</td>
-                  <td className={styles.td}>{b.customerId}</td>
-                  <td className={styles.td}>{b.roomId}</td>
+                  <td className={styles.td}>{String(b.customerId).padStart(3, "0")}</td>
+                  <td className={styles.td}>{String(b.roomId).padStart(3, "0")}</td>
                   <td className={styles.td}>{b.checkIn.toLocaleDateString("vi-VN")}</td>
                   <td className={styles.td}>{b.checkOut.toLocaleDateString("vi-VN")}</td>
                   <td className={`${styles.td} ${
