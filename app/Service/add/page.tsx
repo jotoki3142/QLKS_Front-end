@@ -68,15 +68,13 @@ export default function AddService() {
                 <div className={styles.pageHeaderContent}>
                     <div className={styles.headerLeft}>
                         <span className={styles.plus}>+</span>
-                        <div>
-                            <h1 className={styles.headerTitle}>Thêm dịch vụ mới</h1>
-                            <p className={styles.headerSubtitle}>Tạo thông tin dịch vụ mới</p>
-                        </div>
+                        <h1 className={styles.headerTitle}>Thêm dịch vụ mới</h1>
                     </div>
                     <Link href="/service" className={styles.backBtn}>
                         ← Quay lại
                     </Link>
                 </div>
+                <p className={styles.headerSubtitle}>Tạo thông tin dịch vụ mới</p>
             </section>
 
             {/* Form nhập dữ liệu */}
