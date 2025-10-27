@@ -60,7 +60,7 @@ export default function AddServiceUsePage() {
             }
 
             toast.success("Thêm sử dụng dịch vụ thành công!");
-            router.push("/ServiceUse");
+            router.push("/serviceuse");
         } catch (error: any) {
             console.error("Error adding service usage:", error);
             toast.error(error.message || "Có lỗi xảy ra!");
@@ -73,85 +73,86 @@ export default function AddServiceUsePage() {
         <main className={styles.main}>
             <section className={styles.pageHeader}>
                 <div className={styles.pageHeaderContent}>
-                    <div>
-                        <h1 className={styles.pageTitle}>Thêm sử dụng dịch vụ mới</h1>
-                        <p className={styles.pageSubtitle}>Thêm sử dụng dịch vụ mới vào danh sách</p>
+                    <div className={styles.headerLeft}>
+                        <span className={styles.plus}>+</span>
+                        <h1 className={styles.headerTitle}>
+                            Thêm sử dụng dịch vụ mới
+                            <span className={styles.headerSubtitle}>Thêm sử dụng dịch vụ mới vào danh sách</span>
+                        </h1>
                     </div>
-                    <Link href="/ServiceUse" className={styles.backButton}>
-                        Quay lại
-                    </Link>
+                    <Link href="/serviceuse" className={styles.backBtn}>← Quay lại</Link>
                 </div>
             </section>
 
-            <div className={styles.formContainer}>
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            Mã đặt phòng <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                            type="text"
-                            className={styles.input}
-                            placeholder="Nhập mã đặt phòng..."
-                            value={formData.bookingId}
-                            onChange={(e) => setFormData({ ...formData, bookingId: e.target.value })}
-                            required
-                        />
+            <section className={styles.card}>
+                <form className={styles.form} onSubmit={handleSubmit}>
+                    <div className={styles.formGrid}>
+                        <div className={styles.field}>
+                            <label className={styles.label}>
+                                Mã đặt phòng <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                placeholder="Nhập mã đặt phòng..."
+                                value={formData.bookingId}
+                                onChange={(e) => setFormData({ ...formData, bookingId: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label className={styles.label}>
+                                Mã dịch vụ <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                placeholder="Nhập mã dịch vụ..."
+                                value={formData.serviceId}
+                                onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label className={styles.label}>
+                                Số lượng <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="number"
+                                className={styles.input}
+                                placeholder="Nhập số lượng...."
+                                value={formData.quantity}
+                                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                                min="1"
+                                required
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label className={styles.label}>
+                                Ngày sử dụng <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="date"
+                                className={styles.input}
+                                placeholder="Nhập ngày sử dụng..."
+                                value={formData.usageDate}
+                                onChange={(e) => setFormData({ ...formData, usageDate: e.target.value })}
+                                required
+                            />
+                        </div>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            Mã dịch vụ <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                            type="text"
-                            className={styles.input}
-                            placeholder="Nhập mã dịch vụ..."
-                            value={formData.serviceId}
-                            onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            Số lượng <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                            type="number"
-                            className={styles.input}
-                            placeholder="Nhập số lượng...."
-                            value={formData.quantity}
-                            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                            min="1"
-                            required
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            Ngày sử dụng <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                            type="date"
-                            className={styles.input}
-                            placeholder="Nhập ngày sử dụng..."
-                            value={formData.usageDate}
-                            onChange={(e) => setFormData({ ...formData, usageDate: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div className={styles.formActions}>
-                        <button type="submit" className={styles.btnSubmit} disabled={loading}>
+                    <div className={styles.actions}>
+                        <button type="submit" className={styles.primaryBtn} disabled={loading}>
                             Thêm sử dụng dịch vụ mới
                         </button>
-                        <button type="button" className={styles.btnCancel} onClick={() => router.push("/ServiceUse")}>
-                            Hủy
-                        </button>
+                        <Link href="/serviceuse" className={styles.cancelBtn}>× Hủy</Link>
                     </div>
                 </form>
-            </div>
+            </section>
         </main>
     );
 }

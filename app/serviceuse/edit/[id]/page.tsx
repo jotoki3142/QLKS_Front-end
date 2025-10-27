@@ -40,7 +40,7 @@ export default function EditServiceUsePage() {
             const res = await fetch(`/api/service-usage/api/${id}`);
             if (!res.ok) {
                 toast.error("Không tìm thấy dữ liệu!");
-                router.push("/ServiceUse");
+                router.push("/serviceuse");
                 return;
             }
             const data: ServiceUsage = await res.json();
@@ -54,7 +54,7 @@ export default function EditServiceUsePage() {
         } catch (e) {
             console.error("Failed to load service usage", e);
             toast.error("Có lỗi xảy ra!");
-            router.push("/ServiceUse");
+            router.push("/serviceuse");
         }
     };
 
@@ -92,7 +92,7 @@ export default function EditServiceUsePage() {
             }
 
             toast.success("Cập nhật thành công!");
-            router.push("/ServiceUse");
+            router.push("/serviceuse");
         } catch (error: any) {
             console.error("Error updating:", error);
             toast.error(error.message || "Có lỗi xảy ra!");
@@ -117,7 +117,7 @@ export default function EditServiceUsePage() {
                         <h1 className={styles.pageTitle}>Cập nhật sử dụng dịch vụ</h1>
                         <p className={styles.pageSubtitle}>Cập nhật thông tin sử dụng dịch vụ</p>
                     </div>
-                    <Link href="/ServiceUse" className={styles.backButton}>
+                    <Link href="/serviceuse" className={styles.backButton}>
                         Quay lại
                     </Link>
                 </div>
@@ -182,7 +182,7 @@ export default function EditServiceUsePage() {
                         <button type="submit" className={styles.btnSubmit} disabled={loading}>
                             Cập nhật sử dụng dịch vụ
                         </button>
-                        <button type="button" className={styles.btnCancel} onClick={() => router.push("/ServiceUse")}>
+                        <button type="button" className={styles.btnCancel} onClick={() => router.push("/serviceuse")}>
                             Hủy
                         </button>
                     </div>
