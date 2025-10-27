@@ -211,7 +211,7 @@ export default function EditCustomerPage() {
                 className={styles.input} 
                 value={form.nationalId} 
                 onChange={onChange} 
-                placeholder="Nhập 12 chữ số CCCD..." 
+                placeholder="Nhập số CCCD..." 
                 maxLength={12}
                 pattern="\d{12}"
                 title="CCCD phải có đúng 12 chữ số"
@@ -232,7 +232,7 @@ export default function EditCustomerPage() {
               onChange={onChange} 
               inputMode="numeric"
               autoComplete="tel"
-              placeholder="Nhập 10 chữ số SĐT (bắt đầu bằng 0)..." 
+              placeholder="Nhập số điện thoại..." 
               maxLength={10}
               pattern="0\d{9}"
               title="Số điện thoại phải có 10 chữ số và bắt đầu bằng 0"
