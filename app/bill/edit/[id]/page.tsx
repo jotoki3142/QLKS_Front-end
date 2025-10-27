@@ -145,13 +145,22 @@ export default function EditBillPage() {
 
   return (
     <main className={styles.main}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Chỉnh sửa hóa đơn</h1>
-          <Link href="/bill" className={styles.backButton}>
-            ← Quay lại
-          </Link>
+      {/* Header bar */}
+      <section className={styles.pageHeader}>
+        <div className={styles.pageHeaderContent}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.pageTitle}>Chỉnh sửa hóa đơn</h1>
+            <p className={styles.pageSubtitle}>Cập nhật thông tin hóa đơn</p>
+          </div>
+          <div className={styles.headerRight}>
+            <Link href="/bill" className={styles.backButton}>
+              ← Quay lại
+            </Link>
+          </div>
         </div>
+      </section>
+
+      <div className={styles.container}>
 
         <form onSubmit={handleUpdate} className={styles.form}>
           <div>

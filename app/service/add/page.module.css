@@ -1,114 +1,190 @@
-
-.wrapper {
-    max-width: 800px;
-    margin: 20px auto;
+.main {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  padding: 2rem;
+  color: #111827;
+  font-size: 1rem;
 }
 
-.formHeader {
-    background-color: #6c7b8f;
-    color: white;
-    padding: 20px;
-    border-radius: 8px 8px 0 0;
-    position: relative;
+/* Header - synced with rooms/customer style */
+.pageHeader {
+  margin: 0 -2rem 1rem -2rem;
+  background: #4a7ba8;
+  color: #fff;
+  padding: 1rem 2rem;
 }
 
-.formHeader h2 {
-    margin: 0 0 5px 0;
+.pageHeaderContent {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.formHeader p {
-    margin: 0;
-    font-size: 0.9em;
+.headerLeft {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
-.backButton {
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
-    background-color: white;
-    color: #333;
-    padding: 8px 15px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: bold;
+.plus {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+  position: relative;
+  top: 2px;
 }
 
-.formContainer {
-    background-color: white;
-    padding: 30px;
-    border: 1px solid #b5d5f2;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+.headerTitle {
+  font-size: 1.75rem;
+  margin: 0;
+  font-weight: 700;
 }
 
-.serviceForm {
-    display: flex;
+.headerSubtitle {
+  margin: 2px 0 0;
+  opacity: 0.92;
+  padding: 0 2rem;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.backBtn {
+  background: #fff;
+  color: #374151;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  border: 1px solid #d1d5db;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.backBtn:hover {
+  background-color: #f3f4f6;
+}
+
+/* Card - synced style */
+.card {
+  max-width: 48rem;
+  margin: 0 auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.required {
+  color: red;
+}
+
+.input,
+.select {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #507aa3;
+}
+
+/* Buttons */
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.primaryBtn {
+  background-color: #4a7ba8;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  text-align: center;
+}
+
+.primaryBtn:hover {
+  background-color: #40698c;
+}
+
+.cancelBtn {
+  background-color: #6b7280;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  text-align: center;
+  display: block;
+  box-sizing: border-box;
+}
+
+.cancelBtn:hover {
+  background-color: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .card {
+    padding: 24px;
+  }
+
+  .pageHeaderContent {
     flex-direction: column;
-    gap: 20px;
-}
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0 20px;
+  }
 
-.formRow {
-    display: flex;
-    gap: 30px;
-}
-
-.formGroup {
-    flex: 1;
-    display: flex;
+  .actions {
     flex-direction: column;
-}
+    gap: 10px;
+  }
 
-.formGroup label {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.formGroup label::after {
-    content: " *";
-    color: red;
-}
-
-.formGroup input, .formGroup select {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1em;
-}
-
-.formGroupSpacer {
-    flex: 1;
-}
-
-.formActions {
-    margin-top: 30px;
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-.submitButton {
-    background-color: #6c7b8f;
-    color: white;
-    padding: 10px 25px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1em;
-}
-
-.cancelButton {
-    background-color: #ccc;
-    color: #333;
-    padding: 10px 25px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1em;
-    text-decoration: none;
-    display: inline-block;
-    line-height: 1.5;
+  .primaryBtn,
+  .cancelBtn {
+    width: 100%;
+  }
 }

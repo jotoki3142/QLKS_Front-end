@@ -130,14 +130,22 @@ export default function EditRoomPage() {
 
   return (
     <main className={styles.main}>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Chỉnh sửa phòng</h1>
-          <Link href="/rooms" className={styles.backButton}>
-            ← Quay lại
-          </Link>
+      {/* Header bar */}
+      <section className={styles.pageHeader}>
+        <div className={styles.pageHeaderContent}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.pageTitle}>Chỉnh sửa phòng</h1>
+            <p className={styles.pageSubtitle}>Cập nhật thông tin phòng</p>
+          </div>
+          <div className={styles.headerRight}>
+            <Link href="/rooms" className={styles.backButton}>
+              ← Quay lại
+            </Link>
+          </div>
         </div>
+      </section>
 
+      <div className={styles.container}>
         <form onSubmit={handleUpdate} className={styles.form}>
           <div>
             <label className={styles.label}>Số phòng</label>
@@ -206,7 +214,22 @@ export default function EditRoomPage() {
             <label className={styles.label}>Ảnh phòng (tùy chọn)</label>
             <input type="file" accept="image/*" onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)} className={styles.file} />
             {form.imageFileData && (
-              <Image src={form.imageFileData} alt="Preview" width={192} height={128} className={styles.imagePreview} />
+              <div>
+                <Image src={form.imageFileData} alt="Preview" width={192} height={128} className={styles.imagePreview} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm((r) => ({ ...r, imageFile: null, imageFileData: undefined }));
+                    // Reset file input
+                    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                    if (fileInput) fileInput.value = "";
+                  }}
+                  className={styles.deleteImageBtn}
+                  style={{ marginTop: "0.5rem" }}
+                >
+                  🗑️ Xóa ảnh
+                </button>
+              </div>
             )}
           </div>
 

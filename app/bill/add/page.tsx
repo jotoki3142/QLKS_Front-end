@@ -222,7 +222,7 @@ export default function AddBillPage() {
               disabled={saving}
               className={`${styles.submitButton} ${saving ? styles.saving : ""}`}
             >
-              {saving ? "Đang lưu..." : "Lưu hóa đơn"}
+              {saving ? "Đang lưu..." : "Thêm hóa đơn"}
             </button>
             <Link href="/bill" className={styles.cancelButton}>
               Hủy
