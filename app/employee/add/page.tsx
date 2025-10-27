@@ -41,10 +41,11 @@ export default function AddEmployee() {
                 setEmailError('');
             }
         } else if (name === 'salary') {
-            // Handle salary as number
+            // Handle salary as number - only allow digits
+            const numericValue = value.replace(/[^0-9]/g, '');
             setFormData(prev => ({
                 ...prev,
-                salary: value ? parseFloat(value) : 0,
+                salary: numericValue ? parseInt(numericValue) : 0,
             }));
         } else {
             setFormData(prev => ({
@@ -199,12 +200,11 @@ export default function AddEmployee() {
                             <label className={styles.label}>Lương <span className={styles.required}>*</span></label>
                             <input
                                 className={styles.input}
-                                type="number"
+                                type="text"
                                 name="salary"
                                 placeholder="Nhập lương (VD: 5000000)..."
                                 value={formData.salary || ''}
                                 onChange={handleChange}
-                                min="1"
                                 required
                             />
                         </div>
