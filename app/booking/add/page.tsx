@@ -171,7 +171,7 @@ export default function AddBooking() {
               </label>
               <input
                 className={styles.input}
-                type="number"
+                type="text"
                 name="customerId"
                 value={formData.customerId}
                 onChange={handleInputChange}
@@ -186,7 +186,7 @@ export default function AddBooking() {
               </label>
               <input
                 className={styles.input}
-                type="number"
+                type="text"
                 name="roomId"
                 value={formData.roomId}
                 onChange={handleInputChange}
