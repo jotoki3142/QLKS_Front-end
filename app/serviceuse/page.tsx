@@ -243,7 +243,7 @@ export default function ServiceUsePage() {
                     ) : (
                         paginated.map((usage) => (
                             <tr key={usage.id} className={styles.tr}>
-                                <td className={styles.td}>
+                                <td className={styles.td} style={{ fontWeight: 600 }}>
                                     {String(usage.id).padStart(3, "0")}
                                 </td>
                                 <td className={styles.td}>{String(usage.bookingId).padStart(3, "0")}</td>
