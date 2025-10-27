@@ -44,7 +44,7 @@ export default function BookingPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filtered, setFiltered] = useState<Booking[]>([]);
   const [filters, setFilters] = useState({ customerId: "", status: "", roomId: "" });
-  const [sortField, setSortField] = useState<"bookingId" | "customerId" | "roomId" | null>(null);
+  const [sortField, setSortField] = useState<"checkIn" | "checkOut" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -116,7 +116,7 @@ export default function BookingPage() {
   };
 
   // Sorting
-  const handleSort = (field: "bookingId" | "customerId" | "roomId") => {
+  const handleSort = (field: "checkIn" | "checkOut") => {
     let newOrder: "asc" | "desc" = "asc";
     if (sortField === field && sortOrder === "asc") newOrder = "desc";
     setSortField(field);
@@ -251,26 +251,21 @@ export default function BookingPage() {
         <table className={styles.table}>
           <thead className={styles.thead}>
             <tr>
-              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("bookingId")}>
-                Mã đặt phòng
+              <th className={styles.th}>Mã đặt phòng</th>
+              <th className={styles.th}>Mã KH</th>
+              <th className={styles.th}>Mã phòng</th>
+              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("checkIn")}>
+                Check in
                 <span className={styles.sortIcon}>
-                  {sortField === "bookingId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                  {sortField === "checkIn" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                 </span>
               </th>
-              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("customerId")}>
-                Mã KH
+              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("checkOut")}>
+                Check out
                 <span className={styles.sortIcon}>
-                  {sortField === "customerId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                  {sortField === "checkOut" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
                 </span>
               </th>
-              <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("roomId")}>
-                Mã phòng
-                <span className={styles.sortIcon}>
-                  {sortField === "roomId" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
-                </span>
-              </th>
-              <th className={styles.th}>Check in</th>
-              <th className={styles.th}>Check out</th>
               <th className={styles.th}>Trạng thái</th>
               <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
             </tr>

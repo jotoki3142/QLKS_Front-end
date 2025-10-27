@@ -72,7 +72,7 @@ export default function BillsPage() {
             if (!res.ok) throw new Error("Failed to fetch bills");
             const data = await res.json();
             const billsData: BackendBill[] = data.content || data;
-            const mapped = billsData.map(mapBill);
+            const mapped = billsData.map(mapBill).sort((a, b) => a.billId - b.billId);
             setBills(mapped);
             setFilteredBills(mapped);
         };
@@ -168,7 +168,7 @@ export default function BillsPage() {
         if (reload.ok) {
             const data = await reload.json();
             const billsData: BackendBill[] = data.content || data;
-            const mapped = billsData.map(mapBill);
+            const mapped = billsData.map(mapBill).sort((a, b) => a.billId - b.billId);
             setBills(mapped);
             setFilteredBills(mapped);
         }
@@ -292,8 +292,8 @@ export default function BillsPage() {
                         ) : (
                             paginatedBills.map((bill) => (
                                 <tr key={bill.billId} className={styles.tr}>
-                                    <td className={styles.td} style={{ fontWeight: 600 }}>{bill.billId}</td>
-                                    <td className={styles.td}>{bill.bookingId}</td>
+                                    <td className={styles.td}>{String(bill.billId).padStart(3, "0")}</td>
+                                    <td className={styles.td}>{String(bill.bookingId).padStart(3, "0")}</td>
                                     <td className={styles.td}>
                                         <div className={styles.priceBox}>
                                             <div className={styles.priceValue}>

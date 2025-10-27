@@ -247,7 +247,7 @@ export default function CustomerListPage() {
             ) : (
               paginated.map((c) => (
                 <tr key={c.customerId} className={styles.tr}>
-                  <td className={styles.td} style={{ fontWeight: 600 }}>{c.code}</td>
+                  <td className={styles.td}>{c.code}</td>
                   <td className={styles.td}>{c.fullName}</td>
                   <td className={styles.td}>{c.nationalId}</td>
                   <td className={styles.td}>{c.phone}</td>
