@@ -1,64 +1,66 @@
 .main {
   min-height: 100vh;
-  background-color: #f9fafb;
-  padding: 2rem;
+  background-color: #f3f4f6;
+  padding: 0 2rem 2.5rem 2rem;
   color: #111827;
-  font-size: 1rem;
+  font-size: 1.0625rem;
 }
 
 /* Header bar styles (matching rooms pattern) */
 .pageHeader {
-  margin: -2rem -2rem 1rem -2rem;
+  margin: 0 -2rem 1rem -2rem;
   background: #4a7ba8;
   color: #fff;
 }
 
 .pageHeaderContent {
   max-width: 1280px;
-  padding: 1rem 2rem;
+  margin: 0 auto;
+  padding: 1.25rem 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .headerLeft {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-.plus {
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1;
-  position: relative;
-  top: 2px;
-}
-
-.headerTitle {
-  font-size: 1.75rem;
-  margin: 0;
-  font-weight: 700;
-}
-
-.headerSubtitle {
-  margin: 2px 0 0;
-  opacity: 0.92;
-}
-
-.backBtn {
-  background: #fff;
-  color: #374151;
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 9999px;
-  border: 1px solid #d1d5db;
+.pageTitle {
+  font-size: 2.25rem;
   font-weight: 600;
-  transition: background-color 150ms ease-in-out;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.backBtn:hover {
+.pageSubtitle {
+  margin: 0;
+  opacity: 0.95;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+.backButton {
   background: #f3f4f6;
+  color: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0.5rem 0.9rem;
+  border-radius: 9999px;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.backButton:hover {
+  background: #e5e7eb;
 }
 
 /* Card container */

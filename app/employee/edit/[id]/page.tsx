@@ -144,12 +144,12 @@ export default function EditEmployee({ params }: { params: Promise<{ id: string 
             <section className={styles.pageHeader}>
                 <div className={styles.pageHeaderContent}>
                     <div className={styles.headerLeft}>
-                        <div>
-                            <h1 className={styles.headerTitle}>Cập nhật nhân viên</h1>
-                            <p className={styles.headerSubtitle}>Cập nhật thông tin nhân viên</p>
-                        </div>
+                        <h1 className={styles.pageTitle}>Cập nhật nhân viên</h1>
+                        <p className={styles.pageSubtitle}>Cập nhật thông tin nhân viên</p>
                     </div>
-                    <Link href="/employee" className={styles.backBtn}>← Quay lại</Link>
+                    <div className={styles.headerRight}>
+                        <Link href="/employee" className={styles.backButton}>← Quay lại</Link>
+                    </div>
                 </div>
             </section>
 
