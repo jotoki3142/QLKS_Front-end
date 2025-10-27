@@ -113,7 +113,7 @@ export default function AddRoomPage() {
       router.push("/rooms");
     } catch (err) {
       console.error(err);
-      toast.error("Đã có lỗi khi lưu phòng. Vui lòng thử lại.");
+      toast.error("Đã có lỗi khi thêm phòng. Vui lòng thử lại.");
     } finally {
       setSaving(false);
     }
@@ -269,7 +269,7 @@ export default function AddRoomPage() {
 
           <div className={styles.actions}>
             <button type="submit" disabled={saving} className={styles.submit}>
-              {saving ? "Đang lưu..." : "Lưu phòng"}
+              {saving ? "Đang lưu..." : "Thêm phòng"}
             </button>
             <Link href="/rooms" className={styles.cancel}>Hủy</Link>
           </div>

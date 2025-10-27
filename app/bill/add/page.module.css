@@ -85,21 +85,25 @@
 
 .actions {
   display: flex;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
   margin-top: 1rem;
 }
 
 .submitButton {
-  flex: 1;
-  background: #4a7ba8; /* unified blue */
+  background: #4a7ba8;
   color: #fff;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   border: none;
   border-radius: 0.375rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 150ms ease-in-out;
+  width: 100%;
+  text-align: center;
+  font-size: 0.9375rem;
+  line-height: 1.5;
 }
 
 .submitButton:hover {
@@ -114,13 +118,17 @@
 .cancelButton {
   background: #6b7280;
   color: #fff;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
-  min-width: 110px;
+  width: 100%;
   transition: background-color 150ms ease-in-out;
+  display: block;
+  box-sizing: border-box;
+  font-size: 0.9375rem;
+  line-height: 1.5;
 }
 
 .cancelButton:hover {
