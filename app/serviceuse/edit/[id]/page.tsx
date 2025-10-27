@@ -117,9 +117,9 @@ export default function EditServiceUsePage() {
                         <h1 className={styles.pageTitle}>Cập nhật sử dụng dịch vụ</h1>
                         <p className={styles.pageSubtitle}>Cập nhật thông tin sử dụng dịch vụ</p>
                     </div>
-                    <div className={styles.headerRight}>
-                        <Link href="/serviceuse" className={styles.backButton}>← Quay lại</Link>
-                    </div>
+                    <Link href="/serviceuse" className={styles.backButton}>
+                        Quay lại
+                    </Link>
                 </div>
             </section>
 
@@ -183,8 +183,11 @@ export default function EditServiceUsePage() {
                     <div className={styles.actions}>
                         <button type="submit" className={styles.primaryBtn} disabled={loading}>
                             Cập nhật sử dụng dịch vụ
+
                         </button>
-                        <Link href="/serviceuse" className={styles.cancelBtn}>× Hủy</Link>
+                      <button type="button" className={styles.btnCancel} onClick={() => router.push("/serviceuse")}>
+                            Hủy
+                        </button>
                     </div>
                 </form>
             </section>

@@ -33,6 +33,11 @@ interface BackendBill {
     status: "UNPAID" | "PAID" | "CANCELLED" | string;
 }
 
+// Helper function to format ID with leading zeros
+function formatId(id: number): string {
+    return id.toString().padStart(3, '0');
+}
+
 function mapBill(b: BackendBill): Bill {
     const statusMap: Record<string, string> = {
         UNPAID: "Chưa thanh toán",
@@ -292,8 +297,8 @@ export default function BillsPage() {
                         ) : (
                             paginatedBills.map((bill) => (
                                 <tr key={bill.billId} className={styles.tr}>
-                                    <td className={styles.td}>{String(bill.billId).padStart(3, "0")}</td>
-                                    <td className={styles.td}>{String(bill.bookingId).padStart(3, "0")}</td>
+                                    <td className={styles.td} style={{ fontWeight: 600 }}>{formatId(bill.billId)}</td>
+                                    <td className={styles.td}>{formatId(bill.bookingId)}</td>
                                     <td className={styles.td}>
                                         <div className={styles.priceBox}>
                                             <div className={styles.priceValue}>
@@ -344,7 +349,7 @@ export default function BillsPage() {
                                                     toast.error("Hóa đơn đã thanh toán và không thể xóa");
                                                     return;
                                                 }
-                                                handleDelete(bill.billId, bill.billId.toString());
+                                                handleDelete(bill.billId, formatId(bill.billId));
                                             }}
                                             className={styles.btnDelete}
                                             aria-disabled={bill.status === "Đã thanh toán"}

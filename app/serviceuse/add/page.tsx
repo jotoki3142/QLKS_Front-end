@@ -75,10 +75,10 @@ export default function AddServiceUsePage() {
                 <div className={styles.pageHeaderContent}>
                     <div className={styles.headerLeft}>
                         <span className={styles.plus}>+</span>
-                        <div>
-                            <h1 className={styles.headerTitle}>Thêm sử dụng dịch vụ mới</h1>
-                            <p className={styles.headerSubtitle}>Thêm sử dụng dịch vụ mới vào danh sách</p>
-                        </div>
+                        <h1 className={styles.headerTitle}>
+                            Thêm sử dụng dịch vụ mới
+                            <span className={styles.headerSubtitle}>Thêm sử dụng dịch vụ mới vào danh sách</span>
+                        </h1>
                     </div>
                     <Link href="/serviceuse" className={styles.backBtn}>← Quay lại</Link>
                 </div>

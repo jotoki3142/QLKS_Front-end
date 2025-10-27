@@ -45,19 +45,12 @@ export default function ServiceUsePage() {
     const [filtered, setFiltered] = useState<ServiceUsage[]>([]);
     const [bookingIdFilter, setBookingIdFilter] = useState("");
     const [serviceIdFilter, setServiceIdFilter] = useState("");
+    const [sortField, setSortField] = useState<"quantity" | "usageDate" | null>(null);
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [toDelete, setToDelete] = useState<{ id: number; display: string } | null>(null);
-
-    // Sorting state
-    type SortField = 'quantity' | 'usageDate' | '';
-    type SortDirection = 'asc' | 'desc' | '';
-
-    const [sortConfig, setSortConfig] = useState<{
-        field: SortField;
-        direction: SortDirection;
-    }>({ field: '', direction: '' });
 
     useEffect(() => {
         loadData();
@@ -73,8 +66,10 @@ export default function ServiceUsePage() {
             }
             const data: BackendServiceUsage[] = await res.json();
             const mapped = data.map(mapServiceUsage);
-            setUsages(mapped);
-            setFiltered(mapped);
+            // Sort by ID ascending by default
+            const sorted = mapped.sort((a, b) => a.id - b.id);
+            setUsages(sorted);
+            setFiltered(sorted);
         } catch (e: any) {
             console.error("Load data error:", e);
             toast.error(e.message || "Không thể tải dữ liệu");
@@ -94,29 +89,29 @@ export default function ServiceUsePage() {
         setCurrentPage(1);
     };
 
-
-    const handleSort = (field: SortField) => {
-        let newOrder: 'asc' | 'desc' = 'asc';
-        if (sortConfig.field === field && sortConfig.direction === 'asc') newOrder = 'desc';
-        setSortConfig({ field, direction: newOrder });
-
-        const sorted = [...filtered].sort((a, b) => {
-            let cmp = 0;
-            if (field === 'quantity') {
-                cmp = a.quantity - b.quantity;
-            } else if (field === 'usageDate') {
-                cmp = new Date(a.usageDate).getTime() - new Date(b.usageDate).getTime();
-            }
-            return newOrder === 'asc' ? cmp : -cmp;
-        });
-        setFiltered(sorted);
-    };
-
     const clearFilters = () => {
         setBookingIdFilter("");
         setServiceIdFilter("");
         setFiltered(usages);
         setCurrentPage(1);
+    };
+
+    const handleSort = (field: "quantity" | "usageDate") => {
+        let newOrder: "asc" | "desc" = "asc";
+        if (sortField === field && sortOrder === "asc") newOrder = "desc";
+        setSortField(field);
+        setSortOrder(newOrder);
+
+        const sorted = [...filtered].sort((a, b) => {
+            let cmp = 0;
+            if (field === "quantity") {
+                cmp = a.quantity - b.quantity;
+            } else if (field === "usageDate") {
+                cmp = new Date(a.usageDate).getTime() - new Date(b.usageDate).getTime();
+            }
+            return newOrder === "asc" ? cmp : -cmp;
+        });
+        setFiltered(sorted);
     };
 
     const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
@@ -229,7 +224,7 @@ export default function ServiceUsePage() {
                         >
                             Số lượng
                             <span className={styles.sortIcon}>
-                                {sortConfig.field === 'quantity' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                {sortField === 'quantity' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}
                             </span>
                         </th>
                         <th
@@ -238,8 +233,8 @@ export default function ServiceUsePage() {
                         >
                             Ngày sử dụng
                             <span className={styles.sortIcon}>
-                                {sortConfig.field === 'usageDate' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
-                            </span>
+                                {sortField === 'usageDate' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}                 
+                          </span>
                         </th>
                         <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
                     </tr>
