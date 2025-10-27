@@ -251,6 +251,20 @@ export default function AddRoomPage() {
                 className={styles.previewImage}
               />
             </div>
+            {room.imageFileData && (
+              <button
+                type="button"
+                onClick={() => {
+                  setRoom((r) => ({ ...r, imageFile: null, imageFileData: undefined }));
+                  // Reset file input
+                  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                  if (fileInput) fileInput.value = "";
+                }}
+                className={styles.deleteImageBtn}
+              >
+                🗑️ Xóa ảnh
+              </button>
+            )}
           </div>
 
           <div className={styles.actions}>

@@ -206,7 +206,22 @@ export default function EditRoomPage() {
             <label className={styles.label}>Ảnh phòng (tùy chọn)</label>
             <input type="file" accept="image/*" onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)} className={styles.file} />
             {form.imageFileData && (
-              <Image src={form.imageFileData} alt="Preview" width={192} height={128} className={styles.imagePreview} />
+              <div>
+                <Image src={form.imageFileData} alt="Preview" width={192} height={128} className={styles.imagePreview} />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setForm((r) => ({ ...r, imageFile: null, imageFileData: undefined }));
+                    // Reset file input
+                    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+                    if (fileInput) fileInput.value = "";
+                  }}
+                  className={styles.deleteImageBtn}
+                  style={{ marginTop: "0.5rem" }}
+                >
+                  🗑️ Xóa ảnh
+                </button>
+              </div>
             )}
           </div>
 
