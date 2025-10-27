@@ -63,7 +63,7 @@ export default function BillsPage() {
     const [bookingSearch, setBookingSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [createdDate, setCreatedDate] = useState("");
-    const [sortField, setSortField] = useState<"billId" | "total" | "createdAt" | null>(null);
+    const [sortField, setSortField] = useState<"billId" | "total" | "createdAt" | null>("billId");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -77,9 +77,10 @@ export default function BillsPage() {
             if (!res.ok) throw new Error("Failed to fetch bills");
             const data = await res.json();
             const billsData: BackendBill[] = data.content || data;
-            const mapped = billsData.map(mapBill).sort((a, b) => a.billId - b.billId);
-            setBills(mapped);
-            setFilteredBills(mapped);
+            const mapped = billsData.map(mapBill);
+            const sorted = [...mapped].sort((a, b) => a.billId - b.billId);
+            setBills(sorted);
+            setFilteredBills(sorted);
         };
         load().catch((e) => {
             console.error(e);
@@ -106,8 +107,20 @@ export default function BillsPage() {
         const data = await res.json();
         const billsData: BackendBill[] = data.content || data;
         const mapped = billsData.map(mapBill);
-        setFilteredBills(mapped);
-        setBills(mapped);
+        // Apply current sort order to search results
+        const sorted = [...mapped].sort((a, b) => {
+            let cmp = 0;
+            if (sortField === "total") {
+                cmp = a.total.comparedTo(b.total);
+            } else if (sortField === "createdAt") {
+                cmp = a.createdAt.getTime() - b.createdAt.getTime();
+            } else {
+                cmp = a.billId - b.billId;
+            }
+            return sortOrder === "asc" ? cmp : -cmp;
+        });
+        setFilteredBills(sorted);
+        setBills(sorted);
         setCurrentPage(1);
     };
 
@@ -122,7 +135,12 @@ export default function BillsPage() {
     // Sắp xếp
     const handleSort = (field: "billId" | "total" | "createdAt") => {
         let newOrder: "asc" | "desc" = "asc";
-        if (sortField === field && sortOrder === "asc") newOrder = "desc";
+        if (sortField === field) {
+            newOrder = sortOrder === "asc" ? "desc" : "asc";
+        } else {
+            // When switching to a new field, use ascending as default for billId, descending for others
+            newOrder = field === "billId" ? "asc" : "desc";
+        }
         setSortField(field);
         setSortOrder(newOrder);
 
@@ -173,9 +191,11 @@ export default function BillsPage() {
         if (reload.ok) {
             const data = await reload.json();
             const billsData: BackendBill[] = data.content || data;
-            const mapped = billsData.map(mapBill).sort((a, b) => a.billId - b.billId);
-            setBills(mapped);
-            setFilteredBills(mapped);
+            const mapped = billsData.map(mapBill);
+            // Sort by billId ascending by default (001, 002, 003...)
+            const sorted = [...mapped].sort((a, b) => a.billId - b.billId);
+            setBills(sorted);
+            setFilteredBills(sorted);
         }
         toast.success(`Đã xóa hóa đơn ${displayNumber} thành công!`);
         setIsPopupOpen(false);

@@ -293,7 +293,7 @@ export default function ServicePage() {
                     ) : (
                         shown.map((s) => (
                             <tr key={s.serviceId}>
-                                <td className={styles.td}>{String(s.serviceId).padStart(3, "0")}</td>
+                                <td className={styles.td} style={{ fontWeight: 600 }}>{String(s.serviceId).padStart(3, "0")}</td>
                                 <td className={styles.td}>{s.name}</td>
                                 <td className={styles.td}>{s.type}</td>
                                 <td className={styles.td}>{s.price.toLocaleString()} VNĐ</td>
