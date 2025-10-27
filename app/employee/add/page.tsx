@@ -15,7 +15,7 @@ export default function AddEmployee() {
         phoneNumber: 0,
         email: "",
         shift: "" as EmployeeShift,
-        salary: 1, // Lương mặc định 1 VNĐ (backend yêu cầu > 0)
+        salary: 0, // Will be set by user
         employeeStatus: "WORKING" as EmployeeStatus,
     });
     const [phoneInput, setPhoneInput] = useState("");
@@ -40,6 +40,12 @@ export default function AddEmployee() {
             } else {
                 setEmailError('');
             }
+        } else if (name === 'salary') {
+            // Handle salary as number
+            setFormData(prev => ({
+                ...prev,
+                salary: value ? parseFloat(value) : 0,
+            }));
         } else {
             setFormData(prev => ({
                 ...prev,
@@ -78,6 +84,10 @@ export default function AddEmployee() {
         }
         if (!formData.shift) {
             toast.error('Vui lòng chọn ca làm việc');
+            return;
+        }
+        if (!formData.salary || formData.salary <= 0) {
+            toast.error('Vui lòng nhập lương hợp lệ');
             return;
         }
 
@@ -183,6 +193,20 @@ export default function AddEmployee() {
                                 <option value="AFTERNOON">Ca chiều</option>
                                 <option value="NIGHT">Ca tối</option>
                             </select>
+                        </div>
+
+                        <div className={styles.field}>
+                            <label className={styles.label}>Lương <span className={styles.required}>*</span></label>
+                            <input
+                                className={styles.input}
+                                type="number"
+                                name="salary"
+                                placeholder="Nhập lương (VD: 5000000)..."
+                                value={formData.salary || ''}
+                                onChange={handleChange}
+                                min="1"
+                                required
+                            />
                         </div>
 
                     </div>

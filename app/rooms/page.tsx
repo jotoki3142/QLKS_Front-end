@@ -269,7 +269,7 @@ const handleSort = (field: "roomId" | "price" | "roomNumber") => {
             ) : (
               paginatedRooms.map((room) => (
                 <tr key={room.roomId} className={styles.tr}>
-                  <td className={styles.td}>{String(room.roomId).padStart(3, "0")}</td>
+                  <td className={styles.td} style={{ fontWeight: 600 }}>{String(room.roomId).padStart(3, "0")}</td>
                   <td className={styles.td}>
                     <Image src={room.image || "/pics/default-room.jpg"} width={80} height={64} className={styles.roomImage} alt="room" />
                   </td>
