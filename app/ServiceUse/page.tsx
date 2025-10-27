@@ -48,6 +48,15 @@ export default function ServiceUsePage() {
   const itemsPerPage = 10;
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [toDelete, setToDelete] = useState<{ id: number; display: string } | null>(null);
+  
+  // Sorting state
+  type SortField = 'quantity' | 'usageDate' | '';
+  type SortDirection = 'asc' | 'desc' | '';
+  
+  const [sortConfig, setSortConfig] = useState<{
+    field: SortField;
+    direction: SortDirection;
+  }>({ field: '', direction: '' });
 
   useEffect(() => {
     loadData();
@@ -73,12 +82,53 @@ export default function ServiceUsePage() {
   const filtered = useMemo(() => {
     const bid = bookingIdFilter.trim();
     const sid = serviceIdFilter.trim();
-    return usages.filter((u) => {
+    
+    let result = [...usages].filter((u) => {
       const matchBooking = !bid || u.bookingId.toString().includes(bid);
       const matchService = !sid || u.serviceId.toString().includes(sid);
       return matchBooking && matchService;
     });
-  }, [usages, bookingIdFilter, serviceIdFilter]);
+
+    // Apply sorting
+    if (sortConfig.field) {
+      result.sort((a, b) => {
+        if (sortConfig.field === 'quantity') {
+          return sortConfig.direction === 'asc' 
+            ? a.quantity - b.quantity 
+            : b.quantity - a.quantity;
+        } else if (sortConfig.field === 'usageDate') {
+          return sortConfig.direction === 'asc'
+            ? new Date(a.usageDate).getTime() - new Date(b.usageDate).getTime()
+            : new Date(b.usageDate).getTime() - new Date(a.usageDate).getTime();
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  }, [usages, bookingIdFilter, serviceIdFilter, sortConfig]);
+  
+  const handleSort = (field: SortField) => {
+    setCurrentPage(1); // Reset to first page when sorting
+    setSortConfig(prevConfig => {
+      // If clicking on the same field, toggle the direction
+      if (prevConfig.field === field) {
+        // If already sorted in one direction, reverse it
+        if (prevConfig.direction === 'asc') {
+          return { field, direction: 'desc' };
+        } else if (prevConfig.direction === 'desc') {
+          // If already in descending order, remove the sort
+          return { field: '', direction: '' };
+        }
+        // If no direction set, start with ascending
+        return { field, direction: 'asc' };
+      }
+      // If clicking on a different field, start with ascending for the new field
+      return { field, direction: 'asc' };
+    });
+  };
+  
+  // Remove getSortIndicator function as we're now using CSS for indicators
 
   const clearFilters = () => {
     setBookingIdFilter("");
@@ -179,8 +229,18 @@ export default function ServiceUsePage() {
               <th className={styles.th}>Mã SDDV</th>
               <th className={styles.th}>Mã đặt phòng</th>
               <th className={styles.th}>Mã dịch vụ</th>
-              <th className={styles.th}>Số lượng</th>
-              <th className={styles.th}>Ngày sử dụng</th>
+              <th 
+                className={`${styles.th} ${styles.sortable} ${sortConfig.field === 'quantity' ? (sortConfig.direction === 'asc' ? styles.sortAsc : styles.sortDesc) : ''}`} 
+                onClick={() => handleSort('quantity')}
+              >
+                Số lượng
+              </th>
+              <th 
+                className={`${styles.th} ${styles.sortable} ${sortConfig.field === 'usageDate' ? (sortConfig.direction === 'asc' ? styles.sortAsc : styles.sortDesc) : ''}`} 
+                onClick={() => handleSort('usageDate')}
+              >
+                Ngày sử dụng
+              </th>
               <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
             </tr>
           </thead>
