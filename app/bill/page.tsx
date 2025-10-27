@@ -77,7 +77,7 @@ export default function BillsPage() {
             if (!res.ok) throw new Error("Failed to fetch bills");
             const data = await res.json();
             const billsData: BackendBill[] = data.content || data;
-            const mapped = billsData.map(mapBill);
+            const mapped = billsData.map(mapBill).sort((a, b) => a.billId - b.billId);
             setBills(mapped);
             setFilteredBills(mapped);
         };
@@ -173,7 +173,7 @@ export default function BillsPage() {
         if (reload.ok) {
             const data = await reload.json();
             const billsData: BackendBill[] = data.content || data;
-            const mapped = billsData.map(mapBill);
+            const mapped = billsData.map(mapBill).sort((a, b) => a.billId - b.billId);
             setBills(mapped);
             setFilteredBills(mapped);
         }

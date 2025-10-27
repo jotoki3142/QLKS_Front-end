@@ -138,7 +138,13 @@ export default function ServiceUsePage() {
                 setToDelete(null);
                 return;
             }
-            await loadData();
+            const reload = await fetch("/api/service-usage/api/list", { cache: "no-store" });
+            if (reload.ok) {
+                const data: BackendServiceUsage[] = await reload.json();
+                const mapped = data.map(mapServiceUsage);
+                setUsages(mapped);
+                setFiltered(mapped);
+            }
             toast.success(`Đã xóa ${display} thành công!`);
             setIsPopupOpen(false);
             setToDelete(null);
@@ -227,8 +233,8 @@ export default function ServiceUsePage() {
                         >
                             Ngày sử dụng
                             <span className={styles.sortIcon}>
-                                {sortField === 'usageDate' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}
-                            </span>
+                                {sortField === 'usageDate' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}                 
+                          </span>
                         </th>
                         <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
                     </tr>
