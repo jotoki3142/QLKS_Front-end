@@ -60,7 +60,7 @@ export default function AddServiceUsePage() {
             }
 
             toast.success("Thêm sử dụng dịch vụ thành công!");
-            router.push("/ServiceUse");
+            router.push("/serviceuse");
         } catch (error: any) {
             console.error("Error adding service usage:", error);
             toast.error(error.message || "Có lỗi xảy ra!");
@@ -77,7 +77,7 @@ export default function AddServiceUsePage() {
                         <h1 className={styles.pageTitle}>Thêm sử dụng dịch vụ mới</h1>
                         <p className={styles.pageSubtitle}>Thêm sử dụng dịch vụ mới vào danh sách</p>
                     </div>
-                    <Link href="/ServiceUse" className={styles.backButton}>
+                    <Link href="/serviceuse" className={styles.backButton}>
                         Quay lại
                     </Link>
                 </div>
@@ -146,7 +146,7 @@ export default function AddServiceUsePage() {
                         <button type="submit" className={styles.btnSubmit} disabled={loading}>
                             Thêm sử dụng dịch vụ mới
                         </button>
-                        <button type="button" className={styles.btnCancel} onClick={() => router.push("/ServiceUse")}>
+                        <button type="button" className={styles.btnCancel} onClick={() => router.push("/serviceuse")}>
                             Hủy
                         </button>
                     </div>

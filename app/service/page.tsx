@@ -72,7 +72,7 @@ export default function ServicePage() {
 
             const raw = await res.json();
             const data: BackendService[] = raw.content || raw;
-            const mapped = data.map(mapService);
+            const mapped = data.map(mapService).sort((a, b) => a.serviceId - b.serviceId);
 
             setServices(mapped);
             setFiltered(mapped);
@@ -162,7 +162,7 @@ export default function ServicePage() {
             if (reload.ok) {
                 const raw2 = await reload.json();
                 const data: BackendService[] = raw2.content || raw2;
-                const mapped = data.map(mapService);
+                const mapped = data.map(mapService).sort((a, b) => a.serviceId - b.serviceId);
                 setServices(mapped);
                 setFiltered(mapped);
             }

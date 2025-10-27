@@ -255,7 +255,7 @@ export default function EmployeePage() {
                     ) : (
                         paginated.map((e: Employee) => (
                             <tr key={e.employeeId} className={styles.tr}>
-                                <td className={styles.td} style={{ fontWeight: 600 }}>{e.employeeId}</td>
+                                <td className={styles.td}>{String(e.employeeId).padStart(3, "0")}</td>
                                 <td className={styles.td}>{e.name}</td>
                                 <td className={styles.td}>{e.position ? getRoleDisplay(e.position) : '-'}</td>
                                 <td className={styles.td}>{e.phoneNumber ? String(e.phoneNumber).padStart(10, '0') : '-'}</td>
