@@ -258,13 +258,12 @@ export default function EditCustomerPage() {
             </div>
             <div>
               <label className={styles.label}>Địa chỉ</label>
-              <textarea 
+              <input 
                 name="address" 
                 className={styles.input} 
                 value={form.address} 
                 onChange={onChange} 
                 placeholder="Nhập địa chỉ..."
-                rows={3}
               />
             </div>
           </div>
