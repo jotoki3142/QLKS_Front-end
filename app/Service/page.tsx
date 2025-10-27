@@ -11,6 +11,7 @@ interface Service {
     name: string;
     type: string;
     status: string;
+    price: number;
 }
 
 interface BackendService {
@@ -18,6 +19,7 @@ interface BackendService {
     tenDichVu: string;
     loaiDichVu: "PER_USE" | "PER_HOUR" | "PER_DAY" | "CONSUMABLE" | string;
     trangThai: "ACTIVE" | "INACTIVE" | "TEMPORARY_OUT" | string;
+    gia: number;
 }
 
 function mapService(s: BackendService): Service {
@@ -39,6 +41,7 @@ function mapService(s: BackendService): Service {
         name: s.tenDichVu,
         type: typeMap[s.loaiDichVu] ?? s.loaiDichVu,
         status: statusMap[s.trangThai] ?? s.trangThai,
+        price: s.gia || 0,
     };
 }
 
@@ -48,6 +51,8 @@ export default function ServicePage() {
     const [services, setServices] = useState<Service[]>([]);
     const [filtered, setFiltered] = useState<Service[]>([]);
     const [filters, setFilters] = useState({ name: "", type: "", status: "" });
+    const [sortField, setSortField] = useState<"name" | "price" | null>(null);
+    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -56,12 +61,7 @@ export default function ServicePage() {
 
     useEffect(() => {
         const load = async () => {
-            const params = new URLSearchParams();
-            if (filters.name.trim()) params.set("keyword", filters.name.trim());
-            if (filters.type.trim()) params.set("loaiDichVu", filters.type.trim());
-            if (filters.status.trim()) params.set("status", filters.status.trim());
-
-            const url = `/api/service/api/list${params.toString() ? `?${params}` : ""}`;
+            const url = `/api/service/api/list`;
             const res = await fetch(url, { cache: "no-store" });
 
             if (!res.ok) {
@@ -76,13 +76,66 @@ export default function ServicePage() {
 
             setServices(mapped);
             setFiltered(mapped);
-            setCurrentPage(1);
         };
 
         load().catch(() => {});
-    }, [filters.name, filters.type, filters.status]);
+    }, []);
 
-    const clearFilters = () => setFilters({ name: "", type: "", status: "" });
+    const handleSearch = () => {
+        const keyword = filters.name.trim().toLowerCase();
+        const result = services.filter((s) => {
+            const matchName = !keyword || s.name.toLowerCase().includes(keyword);
+            const matchType = !filters.type || s.type === filters.type || mapTypeFromDisplay(filters.type) === s.type;
+            const matchStatus = !filters.status || s.status === filters.status || mapStatusFromDisplay(filters.status) === s.status;
+            return matchName && matchType && matchStatus;
+        });
+        setFiltered(result);
+        setCurrentPage(1);
+    };
+
+    const clearFilters = () => {
+        setFilters({ name: "", type: "", status: "" });
+        setFiltered(services);
+        setCurrentPage(1);
+    };
+
+    const handleSort = (field: "name" | "price") => {
+        let newOrder: "asc" | "desc" = "asc";
+        if (sortField === field && sortOrder === "asc") newOrder = "desc";
+        setSortField(field);
+        setSortOrder(newOrder);
+
+        const sorted = [...filtered].sort((a, b) => {
+            let cmp = 0;
+            if (field === "name") {
+                cmp = a.name.localeCompare(b.name, "vi", { sensitivity: "base" });
+            } else if (field === "price") {
+                cmp = a.price - b.price;
+            }
+            return newOrder === "asc" ? cmp : -cmp;
+        });
+        setFiltered(sorted);
+    };
+
+    // Helper functions to map display values back to enum
+    function mapTypeFromDisplay(display: string): string {
+        const reverseMap: Record<string, string> = {
+            "Tính theo lần": "PER_USE",
+            "Tính theo giờ": "PER_HOUR",
+            "Tính theo ngày": "PER_DAY",
+            "Tiêu hao": "CONSUMABLE",
+        };
+        return reverseMap[display] || display;
+    }
+
+    function mapStatusFromDisplay(display: string): string {
+        const reverseMap: Record<string, string> = {
+            "Đang hoạt động": "ACTIVE",
+            "Ngừng hoạt động": "INACTIVE",
+            "Tạm thời hết": "TEMPORARY_OUT",
+        };
+        return reverseMap[display] || display;
+    }
 
     const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
     const shown = useMemo(
@@ -179,7 +232,10 @@ export default function ServicePage() {
                     </div>
 
                     <div className={styles.filterActions}>
-                        <button className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>
+                        <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={handleSearch}>
+                            Tìm kiếm
+                        </button>
+                        <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={clearFilters}>
                             Xóa bộ lọc
                         </button>
                     </div>
@@ -206,8 +262,19 @@ export default function ServicePage() {
                     <thead className={styles.thead}>
                     <tr>
                         <th className={styles.th}>Mã DV</th>
-                        <th className={styles.th}>Tên dịch vụ</th>
+                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("name")}>
+                            Tên dịch vụ
+                            <span className={styles.sortIcon}>
+                                {sortField === "name" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                            </span>
+                        </th>
                         <th className={styles.th}>Loại dịch vụ</th>
+                        <th className={`${styles.th} ${styles.clickable}`} onClick={() => handleSort("price")}>
+                            Giá
+                            <span className={styles.sortIcon}>
+                                {sortField === "price" ? (sortOrder === "asc" ? "↑" : "↓") : "↕"}
+                            </span>
+                        </th>
                         <th className={styles.th}>Trạng thái</th>
                         <th className={`${styles.th} ${styles.center}`}>Thao tác</th>
                     </tr>
@@ -215,7 +282,7 @@ export default function ServicePage() {
                     <tbody>
                     {shown.length === 0 ? (
                         <tr>
-                            <td colSpan={5} className={`${styles.td} ${styles.center}`}>
+                            <td colSpan={6} className={`${styles.td} ${styles.center}`}>
                                 Không có dịch vụ phù hợp...
                             </td>
                         </tr>
@@ -225,6 +292,7 @@ export default function ServicePage() {
                                 <td className={styles.td}>{String(s.serviceId).padStart(3, "0")}</td>
                                 <td className={styles.td}>{s.name}</td>
                                 <td className={styles.td}>{s.type}</td>
+                                <td className={styles.td}>{s.price.toLocaleString()} VNĐ</td>
                                 <td className={styles.td}>{s.status}</td>
                                 <td className={`${styles.td} ${styles.center}`}>
                                     <Link href={`/service/edit/${s.serviceId}`} className={styles.btnUpdate}>

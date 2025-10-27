@@ -292,8 +292,8 @@ export default function BillsPage() {
                         ) : (
                             paginatedBills.map((bill) => (
                                 <tr key={bill.billId} className={styles.tr}>
-                                    <td className={styles.td} style={{ fontWeight: 600 }}>#{bill.billId}</td>
-                                    <td className={styles.td}>#{bill.bookingId}</td>
+                                    <td className={styles.td} style={{ fontWeight: 600 }}>{bill.billId}</td>
+                                    <td className={styles.td}>{bill.bookingId}</td>
                                     <td className={styles.td}>
                                         <div className={styles.priceBox}>
                                             <div className={styles.priceValue}>

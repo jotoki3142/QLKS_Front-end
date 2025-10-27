@@ -53,6 +53,7 @@
   padding: 6px 12px;
   border-radius: 9999px;
   border: 1px solid #d1d5db;
+  font-weight: 600;
   transition: background-color 150ms ease-in-out;
 }
 
