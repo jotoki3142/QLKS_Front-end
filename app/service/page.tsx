@@ -73,7 +73,6 @@ export default function ServicePage() {
             const raw = await res.json();
             const data: BackendService[] = raw.content || raw;
             const mapped = data.map(mapService);
-            // Sort by serviceId ascending by default
             const sorted = mapped.sort((a, b) => a.serviceId - b.serviceId);
 
             setServices(sorted);
@@ -167,7 +166,6 @@ export default function ServicePage() {
                 const raw2 = await reload.json();
                 const data: BackendService[] = raw2.content || raw2;
                 const mapped = data.map(mapService);
-                // Sort by serviceId ascending by default
                 const sorted = mapped.sort((a, b) => a.serviceId - b.serviceId);
                 setServices(sorted);
                 setFiltered(sorted);

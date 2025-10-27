@@ -78,7 +78,6 @@ export default function BillsPage() {
             const data = await res.json();
             const billsData: BackendBill[] = data.content || data;
             const mapped = billsData.map(mapBill);
-            // Sort by billId ascending by default (001, 002, 003...)
             const sorted = [...mapped].sort((a, b) => a.billId - b.billId);
             setBills(sorted);
             setFilteredBills(sorted);
