@@ -113,81 +113,81 @@ export default function EditServiceUsePage() {
         <main className={styles.main}>
             <section className={styles.pageHeader}>
                 <div className={styles.pageHeaderContent}>
-                    <div>
+                    <div className={styles.headerLeft}>
                         <h1 className={styles.pageTitle}>Cập nhật sử dụng dịch vụ</h1>
                         <p className={styles.pageSubtitle}>Cập nhật thông tin sử dụng dịch vụ</p>
                     </div>
-                    <Link href="/serviceuse" className={styles.backButton}>
-                        Quay lại
-                    </Link>
+                    <div className={styles.headerRight}>
+                        <Link href="/serviceuse" className={styles.backButton}>← Quay lại</Link>
+                    </div>
                 </div>
             </section>
 
-            <div className={styles.formContainer}>
-                <form onSubmit={handleSubmit} className={styles.form}>
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            Mã đặt phòng <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                            type="text"
-                            className={styles.input}
-                            value={formData.bookingId}
-                            onChange={(e) => setFormData({ ...formData, bookingId: e.target.value })}
-                            required
-                        />
+            <section className={styles.card}>
+                <form className={styles.form} onSubmit={handleSubmit}>
+                    <div className={styles.formGrid}>
+                        <div className={styles.field}>
+                            <label className={styles.label}>
+                                Mã đặt phòng <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value={formData.bookingId}
+                                onChange={(e) => setFormData({ ...formData, bookingId: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label className={styles.label}>
+                                Mã dịch vụ <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value={formData.serviceId}
+                                onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
+                                required
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label className={styles.label}>
+                                Số lượng <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="number"
+                                className={styles.input}
+                                value={formData.quantity}
+                                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                                min="1"
+                                required
+                            />
+                        </div>
+
+                        <div className={styles.field}>
+                            <label className={styles.label}>
+                                Ngày sử dụng <span className={styles.required}>*</span>
+                            </label>
+                            <input
+                                type="date"
+                                className={styles.input}
+                                value={formData.usageDate}
+                                onChange={(e) => setFormData({ ...formData, usageDate: e.target.value })}
+                                required
+                            />
+                        </div>
                     </div>
 
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            Mã dịch vụ <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                            type="text"
-                            className={styles.input}
-                            value={formData.serviceId}
-                            onChange={(e) => setFormData({ ...formData, serviceId: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            Số lượng <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                            type="number"
-                            className={styles.input}
-                            value={formData.quantity}
-                            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                            min="1"
-                            required
-                        />
-                    </div>
-
-                    <div className={styles.formGroup}>
-                        <label className={styles.label}>
-                            Ngày sử dụng <span className={styles.required}>*</span>
-                        </label>
-                        <input
-                            type="date"
-                            className={styles.input}
-                            value={formData.usageDate}
-                            onChange={(e) => setFormData({ ...formData, usageDate: e.target.value })}
-                            required
-                        />
-                    </div>
-
-                    <div className={styles.formActions}>
-                        <button type="submit" className={styles.btnSubmit} disabled={loading}>
+                    <div className={styles.actions}>
+                        <button type="submit" className={styles.primaryBtn} disabled={loading}>
                             Cập nhật sử dụng dịch vụ
                         </button>
-                        <button type="button" className={styles.btnCancel} onClick={() => router.push("/serviceuse")}>
-                            Hủy
-                        </button>
+                        <Link href="/serviceuse" className={styles.cancelBtn}>× Hủy</Link>
                     </div>
                 </form>
-            </div>
+            </section>
         </main>
     );
 }
