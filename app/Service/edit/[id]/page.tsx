@@ -92,11 +92,13 @@ export default function EditService({ params }: { params: { id: string } }) {
             <section className={styles.pageHeader}>
                 <div className={styles.pageHeaderContent}>
                     <div className={styles.headerLeft}>
-                        <h1 className={styles.headerTitle}>Cập nhật dịch vụ</h1>
+                        <h1 className={styles.pageTitle}>Cập nhật dịch vụ</h1>
+                        <p className={styles.pageSubtitle}>Chỉnh sửa thông tin dịch vụ hiện tại</p>
                     </div>
-                    <Link href="/service" className={styles.backBtn}>← Quay lại</Link>
+                    <div className={styles.headerRight}>
+                        <Link href="/service" className={styles.backButton}>← Quay lại</Link>
+                    </div>
                 </div>
-                <p className={styles.headerSubtitle}>Chỉnh sửa thông tin dịch vụ hiện tại</p>
             </section>
 
             <section className={styles.card}>

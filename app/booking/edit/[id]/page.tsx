@@ -148,14 +148,14 @@ export default function EditBooking({ params }: { params: Promise<{ id: string }
       <section className={styles.pageHeader}>
         <div className={styles.pageHeaderContent}>
           <div className={styles.headerLeft}>
-            <div>
-              <h1 className={styles.headerTitle}>Cập nhật đặt phòng</h1>
-              <p className={styles.headerSubtitle}>Chỉnh sửa thông tin đặt phòng #{bookingId}</p>
-            </div>
+            <h1 className={styles.pageTitle}>Cập nhật đặt phòng</h1>
+            <p className={styles.pageSubtitle}>Chỉnh sửa thông tin đặt phòng #{bookingId}</p>
           </div>
-          <Link href="/booking" className={styles.backBtn}>
-            ← Quay lại
-          </Link>
+          <div className={styles.headerRight}>
+            <Link href="/booking" className={styles.backButton}>
+              ← Quay lại
+            </Link>
+          </div>
         </div>
       </section>
 
